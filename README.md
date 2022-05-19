@@ -1,3 +1,5 @@
+# "This package is no more maintained. Please upgrade to [sourcery-map](https://www.npmjs.com/package/sourcery-map)"  
+
 # sorcery-map.js
 
 This package is a fork of [sorcery](https://github.com/Rich-Harris/sorcery) but with few improvements added:
