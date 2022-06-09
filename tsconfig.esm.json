@@ -1,0 +1,20 @@
+{
+    "extends": "./tsconfig.common.json",
+
+    "include": [
+        "./src/index.ts",
+        // "./src/webpack/*.ts"
+    ],
+
+    "compilerOptions": {
+        "module": "es2020",
+        "moduleResolution": "node",
+        // "moduleResolution": "nodenext",
+       
+        "experimentalDecorators": true,
+        "declaration": true,
+        "outDir": "./lib/esm",
+        "rootDir": "./src"
+    }
+}
+
