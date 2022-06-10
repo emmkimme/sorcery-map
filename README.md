@@ -37,6 +37,7 @@ This package is a fork of [sorcery](https://github.com/Rich-Harris/sorcery) with
 | excludeContent | -x, --excludeContent | | Don't populate the sourcesContent array |
 | sourceMappingURL | --sourceMappingURL | `[relative-path]` (default)<br/>`inline`<br/>`[absolute-path]`<br/>`[base-path]`| TBD</br>Append map as a data URI rather than separate file<br/>TBD<br/>[not supported yet]|
 | sourcePathTemplate | --sourcePathTemplate | `[relative-path]` (default)<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location <br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[relative-path]``` |
+| sourceRootBase | --base | allows the base to be specified as something other than the destination file |
 | flatten | -f, --flatten | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map until the file (content) exists<br/>do not flatten the map |
 
 ### misc

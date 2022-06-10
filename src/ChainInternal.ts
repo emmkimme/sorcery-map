@@ -187,11 +187,10 @@ export class ChainInternal {
             write_options = Object.assign({}, write_options );
             write_options.output = this._node.file;
         }
-
-        const resolved = path.resolve( write_options.output );
-        write_options.base = write_options.base ? path.resolve( write_options.base ) : path.dirname( resolved );
-    
         const options = parseOptions( this._node.context.options, write_options );
+
+        const resolved = path.resolve( options.output );
+        options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( resolved );
     
         const map = this.apply( options );
     
@@ -228,7 +227,7 @@ function sourcemapComment ( url: string, dest: string ) {
 function getSourcePath ( node: Node, source: string, options: Options ) {
     const replacer: Record<string, string> = {
         '[absolute-path]': source,
-        '[relative-path]': path.relative( options.base || ( node.file ? path.dirname( node.file ) : '' ), source )
+        '[relative-path]': path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), source )
     };
     let sourcePath = options.sourcePathTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
