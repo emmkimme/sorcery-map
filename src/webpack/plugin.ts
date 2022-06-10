@@ -11,17 +11,17 @@ export class Plugin {
     }
 
     apply ( compiler: Compiler ) {
-        compiler.hooks.compilation.tap(Plugin.pluginName, compilation => {
+        compiler.hooks.compilation.tap( Plugin.pluginName, compilation => {
             compilation.hooks.processAssets.tapAsync(
                 {
                     name: Plugin.pluginName,
                     stage: Compilation.PROCESS_ASSETS_STAGE_DEV_TOOLING,
                     additionalAssets: true
                 },
-                (assets, callback) => {
-                    console.log('here we are');
+                ( assets, callback ) => {
+                    console.log( 'here we are' );
                 }
-            )
+            );
         });
     }
   
