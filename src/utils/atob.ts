@@ -3,6 +3,7 @@
  * @param {string} base64 - the string to decode
  * @returns {string}
  */
+/** @internal */
 export default function atob ( base64: string ) {
-	return Buffer.from( base64, 'base64' ).toString( 'utf8' );
+    return Buffer.from( base64, 'base64' ).toString( 'utf8' );
 }

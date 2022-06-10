@@ -1,20 +1,20 @@
 import { SOURCEMAPPING_URL } from './sourceMappingURL';
 
+/** @internal */
 export function getSourceMappingUrl ( str: string ): string | null {
     if ( !str ) return null;
-    var index, substring, url, match;
 
     // assume we want the last occurence
-    index = str.lastIndexOf( `${SOURCEMAPPING_URL}=` );
+    const index = str.lastIndexOf( `${SOURCEMAPPING_URL}=` );
 
     if ( index === -1 ) {
         return null;
     }
 
-    substring = str.substring( index + 17 );
-    match = /^[^\r\n]+/.exec( substring );
+    const substring = str.substring( index + 17 );
+    const match = /^[^\r\n]+/.exec( substring );
 
-    url = match ? match[0] : null;
+    let url = match ? match[0] : null;
 
     // possibly a better way to do this, but we don't want to exclude whitespace
     // from the sourceMappingURL because it might not have been correctly encoded

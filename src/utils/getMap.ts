@@ -1,9 +1,10 @@
-import { getMapFromUrl, getMapFromUrlSync } from './getMapFromUrl.js';
-import { getSourceMappingUrl } from './getSourceMappingUrl';
-
 import type { Node } from '../Node';
 import type { SourceMapProps } from '../SourceMap';
 
+import { getMapFromUrl, getMapFromUrlSync } from './getMapFromUrl.js';
+import { getSourceMappingUrl } from './getSourceMappingUrl';
+
+/** @internal */
 export function getMap ( node: Node ): Promise<SourceMapProps | null> {
     // 'undefined' never seen
     // 'null' seen but empty
@@ -13,11 +14,12 @@ export function getMap ( node: Node ): Promise<SourceMapProps | null> {
         if ( url ) {
             return getMapFromUrl( url, node.origin );
         }
-        return Promise.resolve(null);
+        return Promise.resolve( null );
     }
-    return Promise.resolve(map);
+    return Promise.resolve( map );
 }
 
+/** @internal */
 export function getMapSync ( node: Node ): SourceMapProps | null {
     // 'undefined' never seen
     // 'null' seen but empty

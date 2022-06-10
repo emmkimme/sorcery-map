@@ -1,9 +1,9 @@
 import * as path from 'path';
 import { Transform } from 'stream';
 
-import { ChainImpl, writeStream } from './ChainImpl';
+import { ChainInternal, writeStream } from './ChainInternal';
 import type { Options } from './Options';
-import { NodeImpl } from './NodeImpl';
+import { Node } from './Node';
 import { Context } from './Context';
 import type { SourceMapProps } from './SourceMap';
 import type { Chain } from './Chain';
@@ -13,13 +13,13 @@ export function transform ( transform_options: Options ) {
 
     const liner = new Transform();
     // the transform function
-    liner._transform = function (chunk, encoding, done) {
+    liner._transform = function ( chunk, encoding, done ) {
         source += chunk.toString();
         done();
-    }
+    };
     // to flush remaining data (if any)
-    liner._flush = function (done) {
-        const node = _init(path.resolve(),  transform_options.output, source, null, transform_options );
+    liner._flush = function ( done ) {
+        const node = _init( path.resolve(), transform_options.output, source, null, transform_options );
         node.loadSync( );
         if ( !node.isOriginalSource ) {
             const content = writeStream( node );
@@ -28,28 +28,28 @@ export function transform ( transform_options: Options ) {
         else {
             this.push( source );
         }
-       done();
-    }
+        done();
+    };
 
     return liner;
 }
 
 export function load ( file: string, load_options: Options ): Promise<Chain | null> {
-    const node = _init(path.resolve(),  file, null, null, load_options );
+    const node = _init( path.resolve(), file, null, null, load_options );
 
     return node.load()
-        .then( () => node.isOriginalSource ? null : new ChainImpl( node ) );
+        .then( () => node.isOriginalSource ? null : new ChainInternal( node ) );
 }
 
 export function loadSync ( file: string, load_options: Options ): Chain | null {
-    const node = _init(path.resolve(), file, null, null, load_options );
+    const node = _init( path.resolve(), file, null, null, load_options );
 
     node.loadSync();
-    return node.isOriginalSource ? null : new ChainImpl( node );
+    return node.isOriginalSource ? null : new ChainInternal( node );
 }
 
 export function _init ( origin: string, file: string, content: string, map: SourceMapProps, load_options: Options ) {
-    const context = new Context(origin, load_options);
-    const node = NodeImpl.Create(context, file, content, map);
+    const context = new Context( origin, load_options );
+    const node = Node.Create( context, file, content, map );
     return node;
 }

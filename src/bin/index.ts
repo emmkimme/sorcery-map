@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
 import * as path from 'path';
+
 import * as minimist from 'minimist';
 import * as fse from 'fs-extra';
 import * as globby from 'globby';
+
 import { injectVersion } from './showHelp';
 import * as sourcery_map from '../';
 import type { Options } from '../Options';
@@ -30,7 +32,8 @@ else if ( process.argv.length <= 2 && process.stdin.isTTY ) {
 }
 
 else if ( command.version ) {
-    console.log( 'Sorcery-map version ' + require( '../package.json' ).version );
+    const packageJSON = fse.readJSONSync( '../package.json' );
+    console.log( 'Sorcery-map version ' + packageJSON.version );
 }
 
 else if ( !command.input ) {
@@ -39,8 +42,6 @@ else if ( !command.input ) {
 
 else {
     const options: Options = { 
-        // ...command,
-        // input: command.input,
         inline: command.datauri,
         output: command.output || command.input,
         excludeContent: command.excludeContent,
@@ -51,21 +52,21 @@ else {
         if ( stats.isDirectory() ) {
             const globby_options = {
                 cwd: command.input
-            }
-            return globby("**/*.js", globby_options)
-            .then((files) => {
-                return files.reduce( ( promise, file ) => {
-                    return promise.then( function () {
-                        const input = path.join( command.input, file );
-                        const output = path.join( options.output, file );
-                        const local_options = Object.assign({}, options, { output, input });
+            };
+            return globby( '**/*.js', globby_options )
+                .then( ( files ) => {
+                    return files.reduce( ( promise, file ) => {
+                        return promise.then( function () {
+                            const input = path.join( command.input, file );
+                            const output = path.join( options.output, file );
 
-                        return sourcery_map.load( input, local_options ).then( ( chain ) => {
-                            return chain.write( output, local_options );
+                            const local_options = Object.assign({}, options, { output });
+                            return sourcery_map.load( input, local_options ).then( ( chain ) => {
+                                return chain.write( output, local_options );
+                            });
                         });
-                    });
-                }, Promise.resolve() );
-            });
+                    }, Promise.resolve() );
+                });
         }
         else {
             return sourcery_map.load( command.input, options ).then( ( chain ) => {
@@ -73,9 +74,9 @@ else {
             });
         }
     })
-    .catch( (err: any ) => {
-        setTimeout( () => {
-            throw err;
+        .catch( ( err: unknown ) => {
+            setTimeout( () => {
+                throw err;
+            });
         });
-    });
 }

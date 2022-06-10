@@ -173,9 +173,11 @@ you can flatten the map at the same time
 ```
 
 ### Webpack [experimental]
-## Loader
+
+#### Loader
 Can replace [source-map-loader](https://github.com/webpack-contrib/source-map-loader)
 
+```
   module: {
             rules: [
                 {
@@ -185,9 +187,13 @@ Can replace [source-map-loader](https://github.com/webpack-contrib/source-map-lo
                     enforce: "pre"
                 },
             ]
+```
 
-## Plugin
+#### Plugin
 TBD
+```
+const SourceryMapperPlugin = require('sourcery-map/plugin');
+```
 
 ## License
 
