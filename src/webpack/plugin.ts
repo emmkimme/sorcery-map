@@ -19,6 +19,7 @@ export class Plugin {
                     additionalAssets: true
                 },
                 (assets, callback) => {
+                    console.log('here we are');
                 }
             )
         });

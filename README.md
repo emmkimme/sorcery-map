@@ -172,7 +172,7 @@ you can flatten the map at the same time
     .pipe(sourcery_map.transform({ output: bundleFile, flatten: 'existing', sourceRootResolution: baseDir }))]
 ```
 
-### Webpack [experimental]
+### Webpack >= 5.x [experimental]
 
 #### Loader
 Can replace [source-map-loader](https://github.com/webpack-contrib/source-map-loader)

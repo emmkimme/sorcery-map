@@ -123,9 +123,10 @@ export class ChainInternal {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
+        const file = path.basename(this._node.file || this._node.map.file);
         const map = new SourceMap({
             version: 3,
-            file: path.basename( this._node.file ),
+            file,
             sources: allSources.map( ( sourceNode ) => {
                 return getSourcePath( this._node, sourceNode.file, options );
             }),
