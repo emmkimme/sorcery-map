@@ -28,8 +28,9 @@
         /* "strict" covers "alwaysStrict", "noImplicitAny", "noImplicitThis", "strictNullChecks",... */
         "strict": true,
         "strictNullChecks": false,
-
+        
         /* Additional Checks */
+        // "useUnknownInCatchVariables": false,
         "noUnusedLocals" : true,
         "noUnusedParameters" : false,
         "noImplicitReturns": true,

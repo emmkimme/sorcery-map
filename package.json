@@ -90,6 +90,7 @@
   },
   "files": [
     "loader.js",
+    "plugin.js",
     "lib/",
     "README.md"
   ]

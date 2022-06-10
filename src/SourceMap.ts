@@ -22,7 +22,7 @@ export class SourceMap {
     sourceRoot: string;
     
     constructor ( sourceMap: SourceMapProps ) {
-        Object.assign(this, sourceMap);
+        Object.assign( this, sourceMap );
     }
 
     toString () {
@@ -32,4 +32,4 @@ export class SourceMap {
     toUrl () {
         return 'data:application/json;charset=utf-8;base64,' + btoa( this.toString() );
     }
-};
+}

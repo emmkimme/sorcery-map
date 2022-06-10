@@ -1,13 +1,14 @@
 import * as path from 'path';
+
 import * as fse from 'fs-extra';
 
-export function injectVersion( stream: any ) {
+import type { Writable } from 'stream';
+
+export function injectVersion ( stream: Writable ) {
     fse.readFile( path.join( __dirname, 'help.md' ), ( err, result ) => {
-        var help;
-
         if ( err ) throw err;
-
-        help = result.toString().replace( '<%= version %>', require( '../../package.json' ).version );
+        const packageJSON = fse.readJSONSync( '../../package.json' );
+        const help = result.toString().replace( '<%= version %>', packageJSON.version );
         ( stream || process.stderr ).write( '\n' + help + '\n' );
     });
-};
+}
