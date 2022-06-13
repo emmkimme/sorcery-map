@@ -179,6 +179,8 @@ you can flatten the map at the same time
 Can replace [source-map-loader](https://github.com/webpack-contrib/source-map-loader)
 
 ```
+module.exports = {
+  ...
   module: {
             rules: [
                 {
@@ -191,9 +193,15 @@ Can replace [source-map-loader](https://github.com/webpack-contrib/source-map-lo
 ```
 
 #### Plugin
-TBD
+Normalize source map files
+
 ```
 const SourceryMapperPlugin = require('sourcery-map/plugin');
+
+module.exports = {
+    plugins: [new SourceryMapperPlugin() ],
+...
+
 ```
 
 ## License
