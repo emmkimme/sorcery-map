@@ -1,51 +1,47 @@
-const { loadSync } = require( '../load' );
-import type { Compiler } from 'webpack';
-import { Options, parseOptions } from '../Options';
-// import { Compilation } from 'webpack';
+import * as path from 'path';
 
-// const DEFAULT_INCLUDE = /\.js$/;
+import type { Compiler } from 'webpack';
+
+import { ChainInternal } from '../ChainInternal';
+import { Context } from '../Context';
+import { Node } from '../Node';
+import type { Options } from '../Options';
+
+const JS_FILE_REGEXP = /\.js$/;
 
 export class Plugin {
     static pluginName = 'SourceryMapper';
 
     private _options: Options;
 
-    constructor ( options ) {
-        this._options = parseOptions(options);
+    constructor ( options: Options ) {
+        this._options = options;
     }
 
     apply ( compiler: Compiler ) {
         compiler.hooks.emit.tap( Plugin.pluginName, ( compilation ) => {
-            compilation.chunks.forEach((chunk) => {
-
-               let ref = json[chunk.name]
+            const context = new Context( compiler.context, this._options );
+            compiler.hooks.emit.tap(Plugin.pluginName, (compilation) => {
+                const files = new Set<string>();
+                for (const chunk of compilation.chunks) {
+                    for (const file of chunk.files) {
+                        files.add(file);
+                    }
+                    for (const file of chunk.auxiliaryFiles) {
+                        files.add(file);
+                    }
+                }
+                for (const file of files) {
+                    if (JS_FILE_REGEXP.test(file)) {
+                        const node = Node.Create(context, path.join(compiler.context, file));
+                        node.loadSync();
+                        if (!node.isOriginalSource) {
+                            const chain = new ChainInternal(node);
+                            chain.writeSync();
+                        }
+                    }
+                }
             });
         });
     }
-  
-    // getFiles(compilation: webpack.Compilation) {
-    //   return Object.keys(compilation.assets)
-    //     .map((name) => {
-    //       if (this.isIncludeOrExclude(name)) {
-    //         return {
-    //           name,
-    //           path: compilation.assets[name].existsAt
-    //         };
-    //       }
-    //       return null;
-    //     })
-    //     .filter(i => i);
-    // }
-
-    // isIncludeOrExclude(filename: string) {
-    //   const isIncluded = DEFAULT_INCLUDE.test(filename);
-    //   return isIncluded;
-    // }
-
-    // sorceryFiles(files: string[]) {
-    //   return Promise.all(files.map(({
-    //     path,
-    //     name
-    //   }) => sourcery_map.load(path).then((chain) => chain.write())));
-    // }
 }

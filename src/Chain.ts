@@ -25,7 +25,7 @@ export interface Chain {
      */
     trace ( oneBasedLineIndex: number, zeroBasedColumnIndex: number, trace_options: Options ): Trace;
 
-    write ( dest: string, write_options: Options ): Promise<void>;
-    writeSync ( dest: string, write_options: Options ): void;
+    write ( dest?: string, write_options?: Options ): Promise<void>;
+    writeSync ( dest?: string, write_options?: Options ): void;
 }
 

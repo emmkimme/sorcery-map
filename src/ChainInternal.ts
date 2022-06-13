@@ -147,7 +147,7 @@ export class ChainInternal {
         return this._node.trace( oneBasedLineIndex - 1, zeroBasedColumnIndex, null, options );
     }
 
-    write ( dest: string, write_options: Options ) {
+    write ( dest?: string, write_options?: Options ) {
         return writeChain( this, dest, write_options )
             .then( () => {
                 // if ( write_options && write_options.recursive ) {
@@ -162,7 +162,7 @@ export class ChainInternal {
             });
     }
 
-    writeSync ( dest: string, write_options: Options ) {
+    writeSync ( dest?: string, write_options?: Options ) {
         writeSyncChain( this, dest, write_options );
         // if ( write_options && write_options.recursive ) {
         //     Object.values( this.nodeCacheByFile )
@@ -174,7 +174,7 @@ export class ChainInternal {
         // }
     }
 
-    getContentAndMap ( dest: string, write_options?: Options ) {
+    getContentAndMap ( dest?: string, write_options?: Options ) {
         if ( typeof dest === 'string' ) {
             write_options = Object.assign({}, write_options );
             write_options.output = dest;
