@@ -21,16 +21,13 @@ export class Context {
         this._nodeCacheByFile = {};
         this._sourceRoots = [];
 
-        const sourceRoots = new Set<string>();
-
         if ( this._options.sourceRootResolution ) {
-            sourceRoots.add( path.resolve( this._options.sourceRootResolution ) );
+            this._sourceRoots.push( path.resolve( this._options.sourceRootResolution ) );
         }
-        sourceRoots.add( path.resolve() );
-
-        // "Set" keep insertion order
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/@@iterator
-        this._sourceRoots = Array.from( sourceRoots );
+        const currentDirectory = path.resolve();
+        if  (!this._sourceRoots.includes(currentDirectory)) {
+            this._sourceRoots.push( currentDirectory );
+        }
 
         if ( this._options.content ) {
             Object.keys( this._options.content ).forEach( key => {
@@ -50,18 +47,6 @@ export class Context {
 
     get cache () {
         return this._nodeCacheByFile;
-    }
-
-    addSourceRoot ( sourceRoot: string ) {
-        const sourceRoots = new Set<string>( this._sourceRoots );
-        sourceRoots.add( sourceRoot );
-        this._sourceRoots = Array.from( sourceRoots );
-    }
-
-    removeSourceRoot ( sourceRoot: string ) {
-        const sourceRoots = new Set<string>( this._sourceRoots );
-        sourceRoots.delete( sourceRoot );
-        this._sourceRoots = Array.from( sourceRoots );
     }
 
     get origin () {

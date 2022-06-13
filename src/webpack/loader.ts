@@ -1,5 +1,6 @@
-import { _init } from '..';
+import { Node } from '../Node';
 import { ChainInternal } from '../ChainInternal';
+import { Context } from '../Context';
 import type { SourceMapProps } from '../SourceMap';
 import { SOURCEMAP_COMMENT } from '../utils/sourceMappingURL';
 
@@ -11,7 +12,9 @@ export function loader ( input: string, inputMap: string ) {
     const callback = webpack_context.async();
 
     const map: SourceMapProps = inputMap ? JSON.parse( inputMap ): undefined;
-    const node = _init( webpack_context.context, undefined, input, map, loader_options );
+
+    const context = new Context( webpack_context.context, loader_options );
+    const node = Node.Create( context, undefined, input, map );
     node.loadSync();
     if ( !node.isOriginalSource ) {
         const chain = new ChainInternal( node );
