@@ -37,8 +37,13 @@ export function getMapFromUrl ( url: string, base: string ): Promise<SourceMapPr
     if ( map ) {
         return Promise.resolve( map );
     }
+
     url = path.resolve( base, decodeURI( url ) );
-    return fse.readFile( url, { encoding: 'utf-8' }).then( json => parseJSON( json ) ).catch( () => null );
+    return fse.readFile( url, { encoding: 'utf-8' })
+        .catch( () => null )
+        .then( ( json ) => {
+            return json ? parseJSON( json ): null;
+        });
 }
 
 /** @internal */
@@ -47,11 +52,13 @@ export function getMapFromUrlSync ( url: string, base: string ): SourceMapProps 
     if ( map ) {
         return map;
     }
+
     url = path.resolve( base, decodeURI( url ) );
+    let json;
     try {
-        return parseJSON( fse.readFileSync( url, { encoding: 'utf-8' }) );
+        json = fse.readFileSync( url, { encoding: 'utf-8' });
     }
     catch ( e ) {
-        return null;
     }
+    return json ? parseJSON( json ): null;
 }

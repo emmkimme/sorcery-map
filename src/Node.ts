@@ -114,7 +114,8 @@ export class Node {
                 return Promise.resolve();
             }
 
-            return getMap( this ).then( map => {
+            return getMap( this )
+            .then( map => {
                 this._map = map;
                 if ( map == null ) {
                     return Promise.resolve();
