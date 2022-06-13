@@ -54,7 +54,7 @@ export class Node {
         this._content = content;
         this._map = map;
 
-        if ((this._file == null) && (this._content == null)) {
+        if ( ( this._file == null ) && ( this._content == null ) ) {
             throw new Error( 'A source must specify either file or content' );
         }
 

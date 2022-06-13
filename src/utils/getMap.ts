@@ -13,10 +13,10 @@ export function getMap ( node: Node ): Promise<SourceMapProps | null> {
         const url = getSourceMappingUrl( node.content );
         if ( url ) {
             return getMapFromUrl( url, node.origin )
-            .catch((err) => {
+                .catch( ( err ) => {
                 // throw new Error(`Error when reading map ${url}`);
-                return null;
-            })
+                    return null;
+                });
         }
         return Promise.resolve( null );
     }
@@ -34,7 +34,7 @@ export function getMapSync ( node: Node ): SourceMapProps | null {
             try {
                 return getMapFromUrlSync( url, node.origin );
             }
-            catch (err) {
+            catch ( err ) {
                 // throw new Error(`Error when reading map ${url}`);
             }
         }

@@ -20,7 +20,7 @@ export class Plugin {
     }
 
     apply ( compiler: Compiler ) {
-        compiler.hooks.emit.tapPromise( Plugin.pluginName, ( compilation ) => {
+        compiler.hooks.afterEmit.tapPromise( Plugin.pluginName, ( compilation ) => {
             const files = new Set<string>();
             for ( const chunk of compilation.chunks ) {
                 for ( const file of chunk.files ) {
