@@ -1,6 +1,6 @@
 // const sourcery_map = require( '../' );
 import type { Compiler } from 'webpack';
-import { Compilation } from 'webpack';
+// import { Compilation } from 'webpack';
 
 // const DEFAULT_INCLUDE = /\.js$/;
 
@@ -11,17 +11,27 @@ export class Plugin {
     }
 
     apply ( compiler: Compiler ) {
-        compiler.hooks.compilation.tap( Plugin.pluginName, compilation => {
-            compilation.hooks.processAssets.tapAsync(
-                {
-                    name: Plugin.pluginName,
-                    stage: Compilation.PROCESS_ASSETS_STAGE_DEV_TOOLING,
-                    additionalAssets: true
-                },
-                ( assets, callback ) => {
-                    console.log( 'here we are' );
-                }
-            );
+        compiler.hooks.emit.tap( Plugin.pluginName, ( compilation ) => {
+            const json: any = {};
+            compilation.chunks.forEach((chunk) => {
+                chunk.files.forEach((filename) => {
+                  let ref = json[chunk.name]
+                  if (ref === undefined) {
+                    ref = {};
+                    json[chunk.name] = ref;
+                  }
+          
+                  if (filename.endsWith('css')) {
+                    ref.css = filename;
+                  } else if (filename.endsWith('css.map')) {
+                    ref.cssMap = filename;
+                  } else if (filename.endsWith('js')) {
+                    ref.source = filename;
+                  } else if (filename.endsWith('js.map')) {
+                    ref.sourceMap = filename;
+                  }
+                });
+              });
         });
     }
   
