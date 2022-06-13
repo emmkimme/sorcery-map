@@ -1,5 +1,6 @@
-// const sourcery_map = require( '../' );
+const { loadSync } = require( '../load' );
 import type { Compiler } from 'webpack';
+import { Options, parseOptions } from '../Options';
 // import { Compilation } from 'webpack';
 
 // const DEFAULT_INCLUDE = /\.js$/;
@@ -7,31 +8,18 @@ import type { Compiler } from 'webpack';
 export class Plugin {
     static pluginName = 'SourceryMapper';
 
-    constructor ( options = {}) {
+    private _options: Options;
+
+    constructor ( options ) {
+        this._options = parseOptions(options);
     }
 
     apply ( compiler: Compiler ) {
         compiler.hooks.emit.tap( Plugin.pluginName, ( compilation ) => {
-            const json: any = {};
             compilation.chunks.forEach((chunk) => {
-                chunk.files.forEach((filename) => {
-                  let ref = json[chunk.name]
-                  if (ref === undefined) {
-                    ref = {};
-                    json[chunk.name] = ref;
-                  }
-          
-                  if (filename.endsWith('css')) {
-                    ref.css = filename;
-                  } else if (filename.endsWith('css.map')) {
-                    ref.cssMap = filename;
-                  } else if (filename.endsWith('js')) {
-                    ref.source = filename;
-                  } else if (filename.endsWith('js.map')) {
-                    ref.sourceMap = filename;
-                  }
-                });
-              });
+
+               let ref = json[chunk.name]
+            });
         });
     }
   
