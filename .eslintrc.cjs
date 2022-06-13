@@ -21,6 +21,7 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': 'off',
         'no-empty-function': 'off',
         '@typescript-eslint/no-empty-function': ['error', { 'allow': ['arrowFunctions', 'constructors'] }],
+        '@typescript-eslint/no-explicit-any': ["error", { "ignoreRestArgs": true }],
         'indent': ['error', 4],
         'quotes': [2, 'single'],
         'linebreak-style': [2, 'unix'],

@@ -148,30 +148,11 @@ export class ChainInternal {
     }
 
     write ( dest?: string, write_options?: Options ) {
-        return writeChain( this, dest, write_options )
-            .then( () => {
-                // if ( write_options && write_options.recursive ) {
-                //     return Promise.all( Object.values( this.nodeCacheByFile )
-                //         .filter( ( node ) => node !== this._node )
-                //         .map( ( node ) => {
-                //             const chain = new Chain( node, this.nodeCacheByFile, write_options );
-                //             return writeChain( chain, write_options );
-                //         })
-                //     );
-                // }
-            });
+        return writeChain( this, dest, write_options );
     }
 
     writeSync ( dest?: string, write_options?: Options ) {
         writeSyncChain( this, dest, write_options );
-        // if ( write_options && write_options.recursive ) {
-        //     Object.values( this.nodeCacheByFile )
-        //         .filter( ( node ) => node !== this._node )
-        //         .map( ( node ) => {
-        //             const chain = new Chain( node, this.nodeCacheByFile, write_options );
-        //             writeSyncChain( chain, write_options );
-        //         });
-        // }
     }
 
     getContentAndMap ( dest?: string, write_options?: Options ) {
@@ -248,7 +229,7 @@ function writeChain ( chain: ChainInternal, dest: string, write_options: Options
                 promises.push( fse.writeFile( resolved + '.map', map.toString() ) );
             }
 
-            return Promise.all( promises );
+            return Promise.all( promises ).then( () => {});
         });
 }
 
@@ -270,15 +251,5 @@ export function writeStream ( stream_node: Node ) {
         fse.ensureDirSync( path.dirname( resolved ) );
         fse.writeFileSync( resolved + '.map', map.toString() );
     }
-
-    // if ( options && options.recursive ) {
-    //     Object.values( nodeCacheByFile )
-    //         .filter( ( othernode ) => othernode !== stream_node )
-    //         .forEach( ( node ) => {
-    //             const chain = new Chain( node, nodeCacheByFile, transform_options );
-    //             writeSyncChain( chain, transform_options );
-    //         });
-    // }
-
     return content;
 }

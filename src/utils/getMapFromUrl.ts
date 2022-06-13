@@ -54,11 +54,12 @@ export function getMapFromUrlSync ( url: string, base: string ): SourceMapProps 
     }
 
     url = path.resolve( base, decodeURI( url ) );
-    let json;
+    let json: string;
     try {
         json = fse.readFileSync( url, { encoding: 'utf-8' });
     }
     catch ( e ) {
+        json = null;
     }
     return json ? parseJSON( json ): null;
 }
