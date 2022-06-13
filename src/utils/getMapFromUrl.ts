@@ -18,48 +18,53 @@ function parseJSON ( json: string ) {
     return JSON.parse( json.replace( /^\)]}'[^\n]*\n/, '' ) );
 }
 
-function getMapFromBase64 ( url: string ): SourceMapProps | null {
+function getRawMapFromBase64 ( url: string ): string | null {
     if ( /^data:/.test( url ) ) { // TODO beef this up
         const match = /base64,(.+)$/.exec( url );
         if ( !match ) {
             throw new Error( `${SOURCEMAPPING_URL} is not base64-encoded` );
         }
-        const json = atob( match[1]);
-        const map = parseJSON( json );
-        return map;
+        return atob( match[1]);
     }
     return null;
 }
 
 /** @internal */
-export function getMapFromUrl ( url: string, base: string ): Promise<SourceMapProps | null> {
-    const map = getMapFromBase64( url );
-    if ( map ) {
-        return Promise.resolve( map );
-    }
-
+function getRawMapFromFile ( url: string, base: string ): Promise<string | null> {
     url = path.resolve( base, decodeURI( url ) );
     return fse.readFile( url, { encoding: 'utf-8' })
-        .catch( () => null )
-        .then( ( json ) => {
-            return json ? parseJSON( json ): null;
-        });
+        .catch( () => null );
+}
+
+/** @internal */
+export function getMapFromUrl ( url: string, base: string ): Promise<SourceMapProps | null> {
+    const raw_map = getRawMapFromBase64( url );
+    const promise = raw_map ? Promise.resolve( raw_map ) : getRawMapFromFile( url, base );
+    return promise
+        .then( ( raw_map ) => {
+            return raw_map ? parseJSON( raw_map ): null;
+        })
+        .catch ((err) => null );
+}
+
+/** @internal */
+function getRawMapFromFileSync ( url: string, base: string ): string {
+    url = path.resolve( base, decodeURI( url ) );
+    try {
+        return fse.readFileSync( url, { encoding: 'utf-8' });
+    }
+    catch ( err ) {
+        return null;
+    }
 }
 
 /** @internal */
 export function getMapFromUrlSync ( url: string, base: string ): SourceMapProps | null {
-    const map = getMapFromBase64( url );
-    if ( map ) {
-        return map;
-    }
-
-    url = path.resolve( base, decodeURI( url ) );
-    let json: string;
+    const raw_map = getRawMapFromBase64( url ) || getRawMapFromFileSync( url, base );
     try {
-        json = fse.readFileSync( url, { encoding: 'utf-8' });
+        return raw_map ? parseJSON( raw_map ): null;
     }
-    catch ( e ) {
-        json = null;
+    catch (err) {
+        return null;
     }
-    return json ? parseJSON( json ): null;
 }
