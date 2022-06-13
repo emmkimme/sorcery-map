@@ -21,10 +21,10 @@ export class Node {
             node = context.cache[file];
             if ( node ) {
                 if ( node._content === undefined ) {
-                    node._content = content || undefined;
+                    node._content = content;
                 }
                 if ( node._map === undefined ) {
-                    node._map = map || undefined;
+                    node._map = map;
                 }
             }
             else {
@@ -32,11 +32,9 @@ export class Node {
                 context.cache[file] = node;
             }
         }
-        else if ( content ) {
-            node = new Node( context, undefined, content, map );
-        }
+        // empty string is allowed
         else {
-            throw new Error( 'A source must specify either file or content' );
+            node = new Node( context, undefined, content, map );
         }
         return node;
     }
@@ -53,14 +51,16 @@ export class Node {
         this._context = context;
 
         this._file = file;
+        this._content = content;
+        this._map = map;
 
-        this._content = content || undefined; 
-        this._map = map || undefined;
+        if ((this._file == null) && (this._content == null)) {
+            throw new Error( 'A source must specify either file or content' );
+        }
 
         // these get filled in later
         this._mappings = null;
         this._sources = null;
-
         this._decodingTime = 0;
     }
 
@@ -115,17 +115,17 @@ export class Node {
             }
 
             return getMap( this )
-            .then( map => {
-                this._map = map;
-                if ( map == null ) {
-                    return Promise.resolve();
-                }
-                this.resolveSources();
+                .then( map => {
+                    this._map = map;
+                    if ( map == null ) {
+                        return Promise.resolve();
+                    }
+                    this.resolveSources();
 
-                return Promise.all( this._sources.map( node => node.load() ) )
-                    .then( () => {
-                    });
-            });
+                    return Promise.all( this._sources.map( node => node.load() ) )
+                        .then( () => {
+                        });
+                });
         });
     }
 

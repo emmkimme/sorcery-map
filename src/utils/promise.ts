@@ -1,5 +1,5 @@
 export interface SerialFunc<T> {
-    ( ...args: any[] ): Promise<T>;
+    ( ...args: any[]): Promise<T>;
 }
 
 export function Serial<T> ( funcs: SerialFunc<T>[]): Promise<T[]> {

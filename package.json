@@ -87,7 +87,7 @@
     "test-coverage": "del-cli -f coverage && istanbul cover --report json node_modules/mocha/bin/mocha.js -- -u exports -R spec test/test.js",
     "posttest-coverage": "remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.lcov -t lcovonly -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped -t html -b dist",
     "ci": "npm run test-coverage && codecov < coverage/coverage-remapped.lcov",
-    "deploy": "npm publish ./ --registry https://registry.npmjs.org"
+    "deploy": "run-p build lint && npm run test && node ./deploy.js"
   },
   "files": [
     "loader.js",
