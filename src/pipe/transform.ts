@@ -1,10 +1,10 @@
 import * as path from 'path';
 import { Transform } from 'stream';
 
-import { writeStream } from './ChainInternal';
-import type { Options } from './Options';
-import { Node } from './Node';
-import { Context } from './Context';
+import { writeStream } from '../ChainInternal';
+import type { Options } from '../Options';
+import { Node } from '../Node';
+import { Context } from '../Context';
 
 export function transform ( transform_options: Options ) {
     let source = '';
@@ -19,15 +19,17 @@ export function transform ( transform_options: Options ) {
     liner._flush = function ( done ) {
         const context = new Context( path.resolve(), transform_options );
         const node = Node.Create( context, transform_options.output, source );
-        node.loadSync( );
-        if ( !node.isOriginalSource ) {
-            const content = writeStream( node );
-            this.push( content );
-        }
-        else {
-            this.push( source );
-        }
-        done();
+        node.load( )
+            .then( () => {
+                if ( !node.isOriginalSource ) {
+                    const content = writeStream( node );
+                    this.push( content );
+                }
+                else {
+                    this.push( source );
+                }
+                done();
+            });
     };
 
     return liner;

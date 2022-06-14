@@ -5,10 +5,10 @@ import * as fse from 'fs-extra';
 
 import { getMap, getMapSync } from './utils/getMap';
 import { getContent, getContentSync } from './utils/getContent';
+import { manageFileProtocol } from './utils/path';
 
 import type { Trace } from './Trace';
 import type { Options } from './Options';
-import { manageFileProtocol } from './utils/path';
 import type { Context } from './Context';
 import type { SourceMapProps } from './SourceMap';
 

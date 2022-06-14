@@ -1,4 +1,4 @@
-export { transform } from './transform';
+export { transform } from './pipe/transform';
 export { load, loadSync } from './load';
 export { Chain } from './Chain';
 export { Options } from './Options';

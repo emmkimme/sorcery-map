@@ -15,16 +15,20 @@ export function loader ( input: string, inputMap: string ) {
 
     const context = new Context( webpack_context.context, loader_options );
     const node = Node.Create( context, undefined, input, map );
-    node.loadSync();
-    if ( !node.isOriginalSource ) {
-        const chain = new ChainInternal( node );
-        const map = chain.apply( loader_options );
-        if ( map )
-            input = input.replace( SOURCEMAP_COMMENT, '' );
-        inputMap = map.toString();
-    }
-
-    callback( null, input, inputMap );
+    node.load()
+        .then( () => {
+            if ( !node.isOriginalSource ) {
+                const chain = new ChainInternal( node );
+                const map = chain.apply( loader_options );
+                if ( map ) {
+                    input = input.replace( SOURCEMAP_COMMENT, '' );
+                }
+                inputMap = map.toString();
+            }
+        })
+        .finally( () => {
+            callback( null, input, inputMap );
+        });
 }
 
 export const raw = false;

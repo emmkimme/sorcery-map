@@ -44,7 +44,7 @@ export function getMapFromUrl ( url: string, base: string ): Promise<SourceMapPr
         .then( ( raw_map ) => {
             return raw_map ? parseJSON( raw_map ): null;
         })
-        .catch ((err) => null );
+        .catch ( ( err ) => null );
 }
 
 /** @internal */
@@ -64,7 +64,7 @@ export function getMapFromUrlSync ( url: string, base: string ): SourceMapProps 
     try {
         return raw_map ? parseJSON( raw_map ): null;
     }
-    catch (err) {
+    catch ( err ) {
         return null;
     }
 }
