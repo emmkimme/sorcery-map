@@ -24,3 +24,15 @@ export function getSourceMappingUrl ( str: string ): string | null {
 
     return url;
 }
+
+// import { SOURCEMAP_COMMENT } from './sourceMappingURL';
+
+// /** @internal */
+// export function getSourceMappingUrl ( str: string ): string | null {
+//     if ( !str ) return null;
+
+//     const candidatsRegExp = SOURCEMAP_COMMENT.exec(str)
+//     const candidats = candidatsRegExp ? candidatsRegExp.filter(candidat => candidat).map(candidat => candidat.replace(/\r?\n|\r/g, '')).filter(candidat => candidat.length) : null;
+//     const url = candidats && candidats.length > 1 ? candidats[candidats.length - 1] : null;
+//     return url;
+// }
