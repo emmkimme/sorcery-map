@@ -14,10 +14,10 @@ import type { SourceMapProps } from './SourceMap';
 
 /** @internal */
 export class Node {
-    static Create ( context: Context, file: string, content?: string, map?: SourceMapProps ): Node {
+    static Create ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Node {
         let node: Node;
-        file = file ? path.resolve( manageFileProtocol( file ) ) : null;
         if ( file ) {
+            file = path.resolve( manageFileProtocol( file ) );
             node = context.cache[file];
             if ( node ) {
                 if ( node._content === undefined ) {
@@ -32,7 +32,6 @@ export class Node {
                 context.cache[file] = node;
             }
         }
-        // empty string is allowed
         else {
             node = new Node( context, undefined, content, map );
         }
@@ -40,14 +39,14 @@ export class Node {
     }
 
     private _context: Context;
-    private _content: string;
-    private _file: string;
-    private _map: SourceMapProps;
+    private _file?: string | null;
+    private _content?: string | null;
+    private _map?: SourceMapProps | null;
     private _mappings: SourceMapMappings;
     private _sources: Node[];
     private _decodingTime: number;
 
-    private constructor ( context: Context, file: string, content: string, map?: SourceMapProps ) {
+    private constructor ( context: Context, file?: string, content?: string, map?: SourceMapProps ) {
         this._context = context;
 
         this._file = file;
@@ -59,8 +58,6 @@ export class Node {
         }
 
         // these get filled in later
-        this._mappings = null;
-        this._sources = null;
         this._decodingTime = 0;
     }
 
@@ -114,18 +111,17 @@ export class Node {
                 return Promise.resolve();
             }
 
-            return getMap( this )
-                .then( map => {
-                    this._map = map;
-                    if ( map == null ) {
-                        return Promise.resolve();
-                    }
-                    this.resolveSources();
+            return getMap( this ).then( map => {
+                this._map = map;
+                if ( map == null ) {
+                    return Promise.resolve();
+                }
+                this.resolveSources();
 
-                    return Promise.all( this._sources.map( node => node.load() ) )
-                        .then( () => {
-                        });
-                });
+                return Promise.all( this._sources.map( node => node.load() ) )
+                    .then( () => {
+                    });
+            });
         });
     }
 

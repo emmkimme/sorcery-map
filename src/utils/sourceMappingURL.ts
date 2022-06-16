@@ -5,7 +5,9 @@ export let SOURCEMAPPING_URL = 'sourceMa';
 SOURCEMAPPING_URL += 'ppingURL';
 
 /** @internal */
-export const SOURCEMAP_COMMENT = new RegExp( '\n*(?:' +
-    `\\/\\/[@#]\\s*${SOURCEMAPPING_URL}=([^\n]+)|` + // js
-    `\\/\\*#?\\s*${SOURCEMAPPING_URL}=([^'"]+)\\s\\*\\/)` + // css
-'\\s*$', 'g' );
+// Matches only the last occurrence of sourceMappingURL
+const sourceMappingValueRegex = RegExp(`\\s*[#@]\\s*${SOURCEMAPPING_URL}\\s*=\\s*([^'"]*)\\s*`);
+export const sourceMappingURLRegex = RegExp(
+ "(?:" + "/\\*" + "(?:\\s*\r?\n(?://)?)?" + "(?:" + sourceMappingValueRegex.source + ")" + "\\s*" +
+ "\\*/" + "|" + "//(?:" + sourceMappingValueRegex.source + ")" + ")" + "\\s*"
+ );

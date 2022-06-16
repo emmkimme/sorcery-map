@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fse from 'fs-extra';
 import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
 
-import { SOURCEMAPPING_URL, SOURCEMAP_COMMENT } from './utils/sourceMappingURL';
+import { SOURCEMAPPING_URL, sourceMappingURLRegex } from './utils/sourceMappingURL';
 import { slash } from './utils/path';
 
 import { SourceMap } from './SourceMap';
@@ -178,11 +178,11 @@ export class ChainInternal {
         if ( map ) {
             const url = ( options.sourceMappingURL === 'inline' ) ? map.toUrl() : ( ( options.sourceMappingURL === '[absolute-path]' ) ? resolved : path.basename( resolved ) ) + '.map';
             // TODO shouldn't url be path.relative?
-            const content = this._node.content && this._node.content.replace( SOURCEMAP_COMMENT, '' ) + sourcemapComment( url, resolved );
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' ) + sourcemapComment( url, resolved );
             return { resolved, content, map, options };
         }
         else {
-            const content = this._node.content && this._node.content.replace( SOURCEMAP_COMMENT, '' );
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
             return { resolved, content, options };
         }
     }
@@ -199,10 +199,10 @@ function sourcemapComment ( url: string, dest: string ) {
     url = encodeURI( url );
 
     if ( ext === '.css' ) {
-        return `\n/*# ${SOURCEMAPPING_URL}=${url} */\n`;
+        return `/*# ${SOURCEMAPPING_URL}=${url} */\n`;
     }
 
-    return `\n//# ${SOURCEMAPPING_URL}=${url}\n`;
+    return `//# ${SOURCEMAPPING_URL}=${url}\n`;
 }
 
 function getSourcePath ( node: Node, source: string, options: Options ) {

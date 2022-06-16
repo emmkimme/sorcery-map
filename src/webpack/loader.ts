@@ -2,7 +2,7 @@ import { Node } from '../Node';
 import { ChainInternal } from '../ChainInternal';
 import { Context } from '../Context';
 import type { SourceMapProps } from '../SourceMap';
-import { SOURCEMAP_COMMENT } from '../utils/sourceMappingURL';
+import { sourceMappingURLRegex } from '../utils/sourceMappingURL';
 
 export function loader ( input: string, inputMap: string ) {
     /* @ts-ignore: error TS2683: 'this' implicitly has type 'any' */
@@ -21,7 +21,7 @@ export function loader ( input: string, inputMap: string ) {
                 const chain = new ChainInternal( node );
                 const map = chain.apply( loader_options );
                 if ( map ) {
-                    input = input.replace( SOURCEMAP_COMMENT, '' );
+                    input = input.replace( sourceMappingURLRegex, '' );
                 }
                 inputMap = map.toString();
             }
