@@ -186,9 +186,14 @@ module.exports = {
             rules: [
                 {
                     test: /\.js$/,
-                    use: ['sourcery-map/loader'],
-                    // use: ["source-map-loader"],
-                    enforce: "pre"
+                    use: [
+                        { loader : 'sourcery-map/loader',
+                          options: { 
+                              excludeContent: true
+                          }
+                        },
+                        // { loader : "source-map-loader" },
+                    ]
                 },
             ]
 ```
@@ -200,7 +205,7 @@ If the Webpack source maps are not properly generated, problem of paths, roots, 
 const SourceryMapperPlugin = require('sourcery-map/plugin');
 
 module.exports = {
-    plugins: [new SourceryMapperPlugin() ],
+    plugins: [new SourceryMapperPlugin( { excludeContent: true } )],
 ...
 
 ```
