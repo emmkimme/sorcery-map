@@ -1,5 +1,6 @@
 import { Node } from '../Node';
-import { ChainInternal } from '../ChainInternal';
+import type { LoaderContext } from 'webpack';
+
 import { Context } from '../Context';
 import type { SourceMapProps } from '../SourceMap';
 import { sourceMappingURLRegex } from '../utils/sourceMappingURL';
@@ -7,28 +8,29 @@ import { sourceMappingURLRegex } from '../utils/sourceMappingURL';
 export function loader ( input: string, inputMap: string ) {
     /* @ts-ignore: error TS2683: 'this' implicitly has type 'any' */
     // eslint-disable-next-line
-    const webpack_context: any = this;
-    const loader_options = webpack_context.getOptions();
-    const callback = webpack_context.async();
+    const webpack_loader_context: LoaderContext = this as LoaderContext;
+    const loader_options = webpack_loader_context.getOptions();
+    const callback = webpack_loader_context.async();
 
     const map: SourceMapProps = inputMap ? JSON.parse( inputMap ): undefined;
 
-    const context = new Context( webpack_context.context, loader_options );
-    const node = Node.Create( context, undefined, input, map );
-    node.load()
-        .then( () => {
-            if ( !node.isOriginalSource ) {
-                const chain = new ChainInternal( node );
+    const context = new Context( webpack_loader_context.context, loader_options );
+    Node.Load( context, undefined, input, map )
+        .then( (chain) => {
+            if ( chain ) {
                 const map = chain.apply( loader_options );
                 if ( map ) {
                     input = input.replace( sourceMappingURLRegex, '' );
+                    inputMap = map.toString();
                 }
-                inputMap = map.toString();
             }
         })
-        .finally( () => {
+        .then( () => {
             callback( null, input, inputMap );
-        });
+        })
+        .catch( (err) => {
+            callback( err );
+        })
 }
 
 export const raw = false;

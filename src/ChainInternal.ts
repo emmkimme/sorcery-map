@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fse from 'fs-extra';
 import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
 
-import { SOURCEMAPPING_URL, sourceMappingURLRegex } from './utils/sourceMappingURL';
+import { generateSourceMappingURLComment, sourceMappingURLRegex } from './utils/sourceMappingURL';
 import { slash } from './utils/path';
 
 import { SourceMap } from './SourceMap';
@@ -178,7 +178,7 @@ export class ChainInternal {
         if ( map ) {
             const url = ( options.sourceMappingURL === 'inline' ) ? map.toUrl() : ( ( options.sourceMappingURL === '[absolute-path]' ) ? resolved : path.basename( resolved ) ) + '.map';
             // TODO shouldn't url be path.relative?
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' ) + sourcemapComment( url, resolved );
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' ) + generateSourceMappingURLComment( url, resolved );
             return { resolved, content, map, options };
         }
         else {
@@ -192,17 +192,6 @@ function tally ( nodes: Node[]) {
     return nodes.reduce( ( total, node ) => {
         return total + node.decodingTime;
     }, 0 );
-}
-
-function sourcemapComment ( url: string, dest: string ) {
-    const ext = path.extname( dest );
-    url = encodeURI( url );
-
-    if ( ext === '.css' ) {
-        return `/*# ${SOURCEMAPPING_URL}=${url} */\n`;
-    }
-
-    return `//# ${SOURCEMAPPING_URL}=${url}\n`;
 }
 
 function getSourcePath ( node: Node, source: string, options: Options ) {
@@ -242,14 +231,4 @@ function writeSyncChain ( chain: ChainInternal, dest: string, write_options: Opt
     if ( map && options.sourceMappingURL !== 'inline' ) {
         fse.writeFileSync( resolved + '.map', map.toString() );
     }
-}
-
-export function writeStream ( stream_node: Node ) {
-    const chain = new ChainInternal( stream_node );
-    const { resolved, content, map, options } = chain.getContentAndMap( stream_node.context.options.output );
-    if ( map && options.sourceMappingURL !== 'inline' ) {
-        fse.ensureDirSync( path.dirname( resolved ) );
-        fse.writeFileSync( resolved + '.map', map.toString() );
-    }
-    return content;
 }

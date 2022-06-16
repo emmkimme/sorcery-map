@@ -11,6 +11,7 @@ import type { Trace } from './Trace';
 import type { Options } from './Options';
 import type { Context } from './Context';
 import type { SourceMapProps } from './SourceMap';
+import { ChainInternal } from './ChainInternal';
 
 /** @internal */
 export class Node {
@@ -37,6 +38,19 @@ export class Node {
         }
         return node;
     }
+
+    static Load ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Promise<ChainInternal | null> {
+        const node = Node.Create( context, file, content, map );
+        return node.load()
+            .then( () => node.isOriginalSource ? null : new ChainInternal( node ) );
+    }
+
+    static LoadSync ( context: Context, file?: string, content?: string, map?: SourceMapProps ): ChainInternal | null {
+        const node = Node.Create( context, file, content, map );
+        node.loadSync();
+        return node.isOriginalSource ? null : new ChainInternal( node );
+    }
+
 
     private _context: Context;
     private _file?: string | null;

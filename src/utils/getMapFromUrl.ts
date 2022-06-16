@@ -48,7 +48,7 @@ export function getMapFromUrl ( url: string, base: string ): Promise<SourceMapPr
 }
 
 /** @internal */
-function getRawMapFromFileSync ( url: string, base: string ): string {
+function getRawMapFromFileSync ( url: string, base: string ): string | null {
     url = path.resolve( base, decodeURI( url ) );
     try {
         return fse.readFileSync( url, { encoding: 'utf-8' });

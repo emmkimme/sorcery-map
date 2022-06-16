@@ -1,8 +1,7 @@
 import * as path from 'path';
 
-import type { Compiler } from 'webpack';
+import type { Compiler, LoaderOptionsPlugin } from 'webpack';
 
-import { ChainInternal } from '../ChainInternal';
 import { Context } from '../Context';
 import { Node } from '../Node';
 import type { Options } from '../Options';
@@ -10,13 +9,17 @@ import { Serial } from '../utils/promise';
 
 const JS_FILE_REGEXP = /\.js$/;
 
-export class Plugin {
+export class Plugin implements LoaderOptionsPlugin {
     static pluginName = 'SourceryMapper';
 
     private _options: Options;
 
     constructor ( options: Options ) {
         this._options = options;
+    }
+
+    get options() {
+        return this._options;
     }
 
     apply ( compiler: Compiler ) {
@@ -37,11 +40,9 @@ export class Plugin {
                 .filter( file => JS_FILE_REGEXP.test( file ) )
                 .map( ( file ) => {
                     return () => {
-                        const node = Node.Create( context, path.join( compiler.context, file ) );
-                        return node.load()
-                            .then( () => {
-                                if ( !node.isOriginalSource ) {
-                                    const chain = new ChainInternal( node );
+                        return Node.Load( context, path.join( compiler.context, file ) )
+                            .then( (chain) => {
+                                if ( chain ) {
                                     return chain.write();
                                 }
                                 else {

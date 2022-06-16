@@ -2,7 +2,7 @@ import type { Node } from '../Node';
 import type { SourceMapProps } from '../SourceMap';
 
 import { getMapFromUrl, getMapFromUrlSync } from './getMapFromUrl.js';
-import { getSourceMappingUrl } from './getSourceMappingUrl';
+import { getSourceMappingUrl } from './sourceMappingURL';
 
 /** @internal */
 export function getMap ( node: Node ): Promise<SourceMapProps | null> {
