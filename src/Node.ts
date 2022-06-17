@@ -71,7 +71,6 @@ export class Node {
             throw new Error( 'A source must specify either file or content' );
         }
 
-        // these get filled in later
         this._decodingTime = 0;
     }
 
@@ -185,8 +184,7 @@ export class Node {
                 this._resolveSources();
 
                 return Promise.all( this._sources.map( node => node._load() ) )
-                    .then( () => {
-                    });
+                    .then( () => {});
             });
         });
     }
