@@ -1,5 +1,7 @@
 import * as path from 'path';
 
+// import type { InputFileSystem, OutputFileSystem } from 'webpack';
+
 import { Node } from './Node';
 import { Options, resolveOptions } from './Options';
 
@@ -15,13 +17,13 @@ export class Context {
     private _options: Options;
     private _origin: string;
 
-    constructor ( origin: string, options: Options ) {
+    constructor ( origin: string, context_options: Options ) {
         this._origin = origin;
-        this._options = options;
+        this._options = context_options;
         this._nodeCacheByFile = {};
         this._sourceRoots = [];
 
-        options = resolveOptions( options );
+        const options = resolveOptions( context_options );
 
         if ( options.sourceRootResolution ) {
             this._sourceRoots.push( path.resolve( options.sourceRootResolution ) );

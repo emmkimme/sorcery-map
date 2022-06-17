@@ -31,7 +31,7 @@ function getRawMapFromBase64 ( url: string ): string | null {
 
 /** @internal */
 function getRawMapFromFile ( url: string, base: string ): Promise<string | null> {
-    url = path.resolve( base, decodeURI( url ) );
+    url = path.resolve( base, url );
     return fse.readFile( url, { encoding: 'utf-8' })
         .catch( () => null );
 }
@@ -49,7 +49,7 @@ export function getMapFromUrl ( url: string, base: string ): Promise<SourceMapPr
 
 /** @internal */
 function getRawMapFromFileSync ( url: string, base: string ): string | null {
-    url = path.resolve( base, decodeURI( url ) );
+    url = path.resolve( base, url );
     try {
         return fse.readFileSync( url, { encoding: 'utf-8' });
     }

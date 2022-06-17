@@ -31,7 +31,7 @@ export function getSourceMappingUrl ( str: string ): string | null {
     // Clean up ahead and retain the latest non-empty value
     const candidats = candidatsRegExp.map( candidat => candidat && candidat.replace( /\r?\n|\r/g, '' ).trim() ).filter( candidat => candidat && candidat.length );
     const url = candidats && candidats.length > 1 ? candidats[candidats.length - 1] : null;
-    return url;
+    return url ? decodeURI(url) : url;
 }
 
 /** @internal */

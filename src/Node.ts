@@ -52,8 +52,8 @@ export class Node {
         return node;
     }
 
-    private _context: Context;
-    private _file?: string | null;
+    private readonly _context: Context;
+    private readonly _file?: string | null;
     private _content?: string | null;
     private _map?: SourceMapProps | null;
     private _mappings: SourceMapMappings;

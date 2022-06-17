@@ -11,7 +11,7 @@ export interface SourceMapProps {
     sourceRoot?: string;
 }
 
-export class SourceMap {
+export class SourceMap implements SourceMapProps {
     version: 3;
 
     file: string;
@@ -21,8 +21,8 @@ export class SourceMap {
     mappings: string;
     sourceRoot: string;
     
-    constructor ( sourceMap: SourceMapProps ) {
-        Object.assign( this, sourceMap );
+    constructor ( sourceMapProps: SourceMapProps ) {
+        Object.assign( this, sourceMapProps );
     }
 
     toString () {
