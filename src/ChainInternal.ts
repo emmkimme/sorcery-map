@@ -161,7 +161,7 @@ export class ChainInternal {
                 if ( content ) {
                     promises.push( fse.writeFile( resolved, content ) );
                 }
-                if ( map && options.sourceMappingURL !== 'inline' ) {
+                if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
                     promises.push( fse.writeFile( resolved + '.map', map.toString() ) );
                 }
     
@@ -175,7 +175,7 @@ export class ChainInternal {
         if ( content ) {
             fse.writeFileSync( resolved, content );
         }
-        if ( map && options.sourceMappingURL !== 'inline' ) {
+        if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
             fse.writeFileSync( resolved + '.map', map.toString() );
         }
     }
@@ -201,11 +201,7 @@ export class ChainInternal {
         const map = this.apply( options );
         const source_content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
         if ( map ) {
-            const url = ( options.sourceMappingURL === 'inline' ) 
-                            ? map.toUrl() 
-                            : ( options.sourceMappingURL === '[absolute-path]' ) 
-                                ? resolved + '.map'
-                                : path.basename( resolved ) + '.map';
+            const url = getSourceMappingURL(map, resolved, options);
             // TODO shouldn't url be path.relative?
             const content = source_content + generateSourceMappingURLComment( url, resolved );
             return { resolved, content, map, options };
@@ -222,14 +218,30 @@ function tally ( nodes: Node[]) {
     }, 0 );
 }
 
+function getSourceMappingURL ( map: SourceMap, source: string, options: Options ) {
+    if ( options.sourceMappingURLTemplate === 'inline' ) {
+        return map.toUrl();
+    }
+    const replacer: Record<string, Function> = {
+        '[absolute-path]': () => source + '.map',
+        '[base-path]': () => path.basename( source ) + '.map'
+    };
+    let sourceMappingURL = options.sourceMappingURLTemplate;
+    Object.keys( replacer ).forEach( ( key ) => {
+        sourceMappingURL = sourceMappingURL.replace( key, replacer[key]());
+    });
+    return sourceMappingURL;
+}
+
+
 function getSourcePath ( node: Node, source: string, options: Options ) {
-    const replacer: Record<string, string> = {
-        '[absolute-path]': source,
-        '[relative-path]': path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), source )
+    const replacer: Record<string, Function> = {
+        '[absolute-path]': () => source,
+        '[relative-path]': () => path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), source )
     };
     let sourcePath = options.sourcePathTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        sourcePath = sourcePath.replace( key, replacer[key]);
+        sourcePath = sourcePath.replace( key, replacer[key]());
     });
     return slash( sourcePath );
 }

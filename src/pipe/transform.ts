@@ -23,7 +23,7 @@ export function transform ( transform_options: Options ) {
             .then( ( chain ) => {
                 if ( chain ) {
                     const { resolved, content, map, options } = chain.getContentAndMap( transform_options.output );
-                    if ( map && options.sourceMappingURL !== 'inline' ) {
+                    if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
                         fse.ensureDirSync( path.dirname( resolved ) );
                         fse.writeFileSync( resolved + '.map', map.toString() );
                     }

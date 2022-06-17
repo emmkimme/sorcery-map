@@ -17,29 +17,31 @@ export class Context {
 
     constructor ( origin: string, options: Options ) {
         this._origin = origin;
-        this._options = parseOptions( options );
+        this._options = options;
         this._nodeCacheByFile = {};
         this._sourceRoots = [];
 
-        if ( this._options.sourceRootResolution ) {
-            this._sourceRoots.push( path.resolve( this._options.sourceRootResolution ) );
+        options = parseOptions(options);
+
+        if ( options.sourceRootResolution ) {
+            this._sourceRoots.push( path.resolve( options.sourceRootResolution ) );
         }
         const currentDirectory = path.resolve();
         if  ( !this._sourceRoots.includes( currentDirectory ) ) {
             this._sourceRoots.push( currentDirectory );
         }
 
-        if ( this._options.content ) {
-            Object.keys( this._options.content ).forEach( key => {
+        if ( options.content ) {
+            Object.keys( options.content ).forEach( key => {
                 const file = path.resolve( key );
-                const content = this._options.content[key];
+                const content = options.content[key];
                 Node.Create( this, file, content );
             });
         }
-        if ( this._options.sourcemaps ) {
-            Object.keys( this._options.sourcemaps ).forEach( key => {
+        if ( options.sourcemaps ) {
+            Object.keys( options.sourcemaps ).forEach( key => {
                 const file = path.resolve( key );
-                const map = this._options.sourcemaps[key];
+                const map = options.sourcemaps[key];
                 Node.Create( this, file, undefined, map );
             });
         }
