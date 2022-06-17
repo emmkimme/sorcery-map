@@ -1,9 +1,9 @@
-import { Node } from '../Node';
 import type { LoaderContext } from 'webpack';
 
 import { Context } from '../Context';
 import type { SourceMapProps } from '../SourceMap';
 import { sourceMappingURLRegex } from '../utils/sourceMappingURL';
+import { ChainInternal } from '../ChainInternal';
 
 export function loader ( input: string, inputMap: string ) {
     /* @ts-ignore: error TS2683: 'this' implicitly has type 'any' */
@@ -15,8 +15,8 @@ export function loader ( input: string, inputMap: string ) {
     const map: SourceMapProps = inputMap ? JSON.parse( inputMap ): undefined;
 
     const context = new Context( webpack_loader_context.context, loader_options );
-    Node.Load( context, undefined, input, map )
-        .then( (chain) => {
+    ChainInternal.Load( context, undefined, input, map )
+        .then( ( chain ) => {
             if ( chain ) {
                 const map = chain.apply( loader_options );
                 if ( map ) {
@@ -28,9 +28,9 @@ export function loader ( input: string, inputMap: string ) {
         .then( () => {
             callback( null, input, inputMap );
         })
-        .catch( (err) => {
+        .catch( ( err ) => {
             callback( err );
-        })
+        });
 }
 
 export const raw = false;

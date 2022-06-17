@@ -11,7 +11,6 @@ import type { Trace } from './Trace';
 import type { Options } from './Options';
 import type { Context } from './Context';
 import type { SourceMapProps } from './SourceMap';
-import { ChainInternal } from './ChainInternal';
 
 /** @internal */
 export class Node {
@@ -39,18 +38,19 @@ export class Node {
         return node;
     }
 
-    static Load ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Promise<ChainInternal | null> {
+    static Load ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Promise<Node> {
         const node = Node.Create( context, file, content, map );
-        return node.load()
-            .then( () => node.isOriginalSource ? null : new ChainInternal( node ) );
+        return node._load()
+            .then( () => {
+                return node;
+            });
     }
 
-    static LoadSync ( context: Context, file?: string, content?: string, map?: SourceMapProps ): ChainInternal | null {
+    static LoadSync ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Node {
         const node = Node.Create( context, file, content, map );
-        node.loadSync();
-        return node.isOriginalSource ? null : new ChainInternal( node );
+        node._loadSync();
+        return node;
     }
-
 
     private _context: Context;
     private _file?: string | null;
@@ -118,38 +118,6 @@ export class Node {
         return ( this._sources == null ) || this._sources.some( ( node ) => node._content == null );
     }
 
-    load (): Promise<void> {
-        return getContent( this ).then( content => {
-            this._content = content;
-            if ( content == null ) {
-                return Promise.resolve();
-            }
-
-            return getMap( this ).then( map => {
-                this._map = map;
-                if ( map == null ) {
-                    return Promise.resolve();
-                }
-                this.resolveSources();
-
-                return Promise.all( this._sources.map( node => node.load() ) )
-                    .then( () => {
-                    });
-            });
-        });
-    }
-
-    loadSync (): void {
-        this._content = getContentSync( this );
-        if ( this._content != null ) {
-            this._map = getMapSync( this );
-            if ( this._map != null ) {
-                this.resolveSources();
-                this._sources.forEach( node => node.loadSync() );
-            }
-        }
-    }
-
     trace ( lineIndex: number, columnIndex: number, name?: string, options?: Options ): Trace {
         // If this node doesn't have a source map, we have
         // to assume it is the original source
@@ -172,9 +140,7 @@ export class Node {
 
         if ( columnIndex != null ) {
             const len = segments.length;
-            let i;
-
-            for ( i = 0; i < len; i += 1 ) {
+            for ( let i = 0; i < len; i += 1 ) {
                 const generatedCodeColumn = segments[i][0];
 
                 if ( generatedCodeColumn > columnIndex ) {
@@ -204,7 +170,39 @@ export class Node {
         return parent.trace( sourceCodeLine, null, this._map.names[nameIndex] || name, options );
     }
 
-    resolveSources () {
+    private _load (): Promise<void> {
+        return getContent( this ).then( content => {
+            this._content = content;
+            if ( content == null ) {
+                return Promise.resolve();
+            }
+
+            return getMap( this ).then( map => {
+                this._map = map;
+                if ( map == null ) {
+                    return Promise.resolve();
+                }
+                this._resolveSources();
+
+                return Promise.all( this._sources.map( node => node._load() ) )
+                    .then( () => {
+                    });
+            });
+        });
+    }
+
+    private _loadSync (): void {
+        this._content = getContentSync( this );
+        if ( this._content != null ) {
+            this._map = getMapSync( this );
+            if ( this._map != null ) {
+                this._resolveSources();
+                this._sources.forEach( node => node._loadSync() );
+            }
+        }
+    }
+
+    private _resolveSources () {
         const map = this._map;
 
         // Browserify or similar tools when inlining the map, set the file to a generic name like "generated.js"

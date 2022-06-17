@@ -4,8 +4,8 @@ import { Transform } from 'stream';
 import * as fse from 'fs-extra';
 
 import type { Options } from '../Options';
-import { Node } from '../Node';
 import { Context } from '../Context';
+import { ChainInternal } from '../ChainInternal';
 
 export function transform ( transform_options: Options ) {
     let source = '';
@@ -19,8 +19,8 @@ export function transform ( transform_options: Options ) {
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
         const context = new Context( path.resolve(), transform_options );
-        Node.Load( context, transform_options.output, source )
-            .then( (chain) => {
+        ChainInternal.Load( context, transform_options.output, source )
+            .then( ( chain ) => {
                 if ( chain ) {
                     const { resolved, content, map, options } = chain.getContentAndMap( transform_options.output );
                     if ( map && options.sourceMappingURL !== 'inline' ) {
@@ -33,8 +33,8 @@ export function transform ( transform_options: Options ) {
                     done( undefined, source );
                 }
             })
-            .catch ((err) => {
-                done(err);
+            .catch ( ( err ) => {
+                done( err );
             });
     };
 

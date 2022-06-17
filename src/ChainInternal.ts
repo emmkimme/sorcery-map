@@ -6,18 +6,29 @@ import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sour
 import { generateSourceMappingURLComment, sourceMappingURLRegex } from './utils/sourceMappingURL';
 import { slash } from './utils/path';
 
-import { SourceMap } from './SourceMap';
+import { SourceMap, SourceMapProps } from './SourceMap';
 import type { Stats } from './Stats';
 import type { Options } from './Options';
-import type { Node } from './Node';
+import { Node } from './Node';
 import { parseOptions } from './Options';
+import type { Context } from './Context';
 
 /** @internal */
 export class ChainInternal {
+    static Load ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Promise<ChainInternal | null> {
+        return Node.Load( context, file, content, map )
+            .then( ( node ) => node.isOriginalSource ? null : new ChainInternal( node ) );
+    }
+
+    static LoadSync ( context: Context, file?: string, content?: string, map?: SourceMapProps ): ChainInternal | null {
+        const node = Node.LoadSync( context, file, content, map );
+        return node.isOriginalSource ? null : new ChainInternal( node );
+    }
+
     private _node: Node;
     private _stats: Stats;
 
-    constructor ( node: Node ) {
+    private constructor ( node: Node ) {
         this._node = node;
         this._stats = {
             decodingTime: 0,
@@ -47,6 +58,7 @@ export class ChainInternal {
 
         let allNames: string[] = [];
         let allSources: Node[] = [];
+        let allMappings: SourceMapMappings;
 
         const applySegment = ( segment: SourceMapSegment, result: SourceMapLine ) => {
             if ( segment.length < 4 ) return;
@@ -88,23 +100,17 @@ export class ChainInternal {
             result.push( newSegment );
         };
 
-        let i = this._node.mappings.length;
-        let allMappings: SourceMapMappings;
         if ( options.flatten ) {
+            let i = this._node.mappings.length;
             allMappings = new Array( i );
             // Trace mappings
             const tracingStart = process.hrtime();
-
-            let j: number;
-            let line: SourceMapLine;
-            let result: SourceMapLine;
-
             while ( i-- ) {
-                line = this._node.mappings[i];
-                allMappings[i] = result = [];
+                const line = this._node.mappings[i];
+                allMappings[i] = [];
 
-                for ( j = 0; j < line.length; j += 1 ) {
-                    applySegment( line[j], result );
+                for ( let j = 0; j < line.length; j += 1 ) {
+                    applySegment( line[j], allMappings[i]);
                 }
             }
 
@@ -148,13 +154,32 @@ export class ChainInternal {
     }
 
     write ( dest?: string, write_options?: Options ) {
-        return writeChain( this, dest, write_options );
+        const { resolved, content, map, options } = this.getContentAndMap( dest, write_options );
+        return fse.ensureDir( path.dirname( resolved ) )
+            .then( () => {
+                const promises = [];
+                if ( content ) {
+                    promises.push( fse.writeFile( resolved, content ) );
+                }
+                if ( map && options.sourceMappingURL !== 'inline' ) {
+                    promises.push( fse.writeFile( resolved + '.map', map.toString() ) );
+                }
+    
+                return Promise.all( promises ).then( () => {});
+            });
     }
 
-    writeSync ( dest?: string, write_options?: Options ) {
-        writeSyncChain( this, dest, write_options );
+    writeSync ( dest: string, write_options: Options ) {
+        const { resolved, content, map, options } = this.getContentAndMap( dest, write_options );
+        fse.ensureDirSync( path.dirname( resolved ) );
+        if ( content ) {
+            fse.writeFileSync( resolved, content );
+        }
+        if ( map && options.sourceMappingURL !== 'inline' ) {
+            fse.writeFileSync( resolved + '.map', map.toString() );
+        }
     }
-
+    
     getContentAndMap ( dest?: string, write_options?: Options ) {
         if ( typeof dest === 'string' ) {
             write_options = Object.assign({}, write_options );
@@ -174,16 +199,19 @@ export class ChainInternal {
         options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( resolved );
     
         const map = this.apply( options );
-    
+        const source_content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
         if ( map ) {
-            const url = ( options.sourceMappingURL === 'inline' ) ? map.toUrl() : ( ( options.sourceMappingURL === '[absolute-path]' ) ? resolved : path.basename( resolved ) ) + '.map';
+            const url = ( options.sourceMappingURL === 'inline' ) 
+                            ? map.toUrl() 
+                            : ( options.sourceMappingURL === '[absolute-path]' ) 
+                                ? resolved + '.map'
+                                : path.basename( resolved ) + '.map';
             // TODO shouldn't url be path.relative?
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' ) + generateSourceMappingURLComment( url, resolved );
+            const content = source_content + generateSourceMappingURLComment( url, resolved );
             return { resolved, content, map, options };
         }
         else {
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
-            return { resolved, content, options };
+            return { resolved, content: source_content, options };
         }
     }
 }
@@ -204,31 +232,4 @@ function getSourcePath ( node: Node, source: string, options: Options ) {
         sourcePath = sourcePath.replace( key, replacer[key]);
     });
     return slash( sourcePath );
-}
-
-function writeChain ( chain: ChainInternal, dest: string, write_options: Options ) {
-    const { resolved, content, map, options } = chain.getContentAndMap( dest, write_options );
-    return fse.ensureDir( path.dirname( resolved ) )
-        .then( () => {
-            const promises = [];
-            if ( content ) {
-                promises.push( fse.writeFile( resolved, content ) );
-            }
-            if ( map && options.sourceMappingURL !== 'inline' ) {
-                promises.push( fse.writeFile( resolved + '.map', map.toString() ) );
-            }
-
-            return Promise.all( promises ).then( () => {});
-        });
-}
-
-function writeSyncChain ( chain: ChainInternal, dest: string, write_options: Options ) {
-    const { resolved, content, map, options } = chain.getContentAndMap( dest, write_options );
-    fse.ensureDirSync( path.dirname( resolved ) );
-    if ( content ) {
-        fse.writeFileSync( resolved, content );
-    }
-    if ( map && options.sourceMappingURL !== 'inline' ) {
-        fse.writeFileSync( resolved + '.map', map.toString() );
-    }
 }

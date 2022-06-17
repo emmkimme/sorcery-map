@@ -1,9 +1,9 @@
 import * as path from 'path';
 
 import type { Compiler, LoaderOptionsPlugin } from 'webpack';
+import { ChainInternal } from '../ChainInternal';
 
 import { Context } from '../Context';
-import { Node } from '../Node';
 import type { Options } from '../Options';
 import { Serial } from '../utils/promise';
 
@@ -18,7 +18,7 @@ export class Plugin implements LoaderOptionsPlugin {
         this._options = options;
     }
 
-    get options() {
+    get options () {
         return this._options;
     }
 
@@ -40,8 +40,8 @@ export class Plugin implements LoaderOptionsPlugin {
                 .filter( file => JS_FILE_REGEXP.test( file ) )
                 .map( ( file ) => {
                     return () => {
-                        return Node.Load( context, path.join( compiler.context, file ) )
-                            .then( (chain) => {
+                        return ChainInternal.Load( context, path.join( compiler.context, file ) )
+                            .then( ( chain ) => {
                                 if ( chain ) {
                                     return chain.write();
                                 }
