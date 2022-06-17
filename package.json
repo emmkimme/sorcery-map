@@ -1,7 +1,7 @@
 {
   "name": "sourcery-map",
   "description": "Find your way through the chain of sourcemaps to the original source, like magic sourcery",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "author": "Emmanuel Kimmerlin",
   "repository": "https://github.com/emmkimme/sourcery-map",
   "license": "MIT",
@@ -33,7 +33,10 @@
     "externalize",
     "bundle",
     "transformation",
-    "flatten"
+    "flatten",
+    "webpack",
+    "loader",
+    "plugin"
   ],
   "maintainers": [
     {

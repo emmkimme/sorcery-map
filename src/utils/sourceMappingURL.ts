@@ -24,7 +24,11 @@ export function getSourceMappingUrl ( str: string ): string | null {
     if ( !candidatsRegExp ) {
         return null;
     }
-    // Clean up ahead !!
+    // First index contains the full sourceMappingURL comment
+    // Second index contains the sourceMappingURL value if it is a CSS content (could be null)
+    // third index contains the sourceMappingURL value if it is a JS content (could be null)
+    
+    // Clean up ahead and retain the latest non-empty value
     const candidats = candidatsRegExp.map( candidat => candidat && candidat.replace( /\r?\n|\r/g, '' ).trim() ).filter( candidat => candidat && candidat.length );
     const url = candidats && candidats.length > 1 ? candidats[candidats.length - 1] : null;
     return url;
