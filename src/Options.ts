@@ -1,14 +1,14 @@
 import type * as minimist from 'minimist';
 import type { SourceMapProps } from './SourceMap';
 
-interface LoadOptions {
+interface InputOptions {
     content?: { [file: string]: string };
     sourcemaps?: { [file: string]: SourceMapProps };
     sourceRootResolution?: string; // base path of the relative sources path in the map
     verbose?: boolean;
 }
 
-interface SaveOptions {
+interface OutputOptions {
     output: string;
     inline?: boolean;        // deprecated: sourceMappingURL === 'inline'
     absolutePath?: boolean;  // deprecated: sourceMappingURL === '[absolute-path]'
@@ -21,7 +21,7 @@ interface SaveOptions {
     flatten?: 'full' | 'existing' | false
 }
 
-export interface Options extends LoadOptions, SaveOptions {
+export interface Options extends InputOptions, OutputOptions {
 }
 
 /** @internal */
