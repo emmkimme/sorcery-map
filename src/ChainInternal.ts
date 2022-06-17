@@ -10,7 +10,7 @@ import { SourceMap, SourceMapProps } from './SourceMap';
 import type { Stats } from './Stats';
 import type { Options } from './Options';
 import { Node } from './Node';
-import { parseOptions } from './Options';
+import { resolveOptions } from './Options';
 import type { Context } from './Context';
 
 /** @internal */
@@ -50,7 +50,7 @@ export class ChainInternal {
     }
 
     apply ( apply_options: Options ): SourceMap | null {
-        const options = parseOptions( this._node.context.options, apply_options );
+        const options = resolveOptions( this._node.context.options, apply_options );
 
         if ( this._node.isOriginalSource || ( options && options.flatten === 'existing' && !this._node.isCompleteSourceContent ) ) {
             return null;
@@ -149,7 +149,7 @@ export class ChainInternal {
     }
 
     trace ( oneBasedLineIndex: number, zeroBasedColumnIndex: number, trace_options: Options ) {
-        const options = parseOptions( this._node.context.options, trace_options );
+        const options = resolveOptions( this._node.context.options, trace_options );
         return this._node.trace( oneBasedLineIndex - 1, zeroBasedColumnIndex, null, options );
     }
 
@@ -193,7 +193,7 @@ export class ChainInternal {
             write_options = Object.assign({}, write_options );
             write_options.output = this._node.file;
         }
-        const options = parseOptions( this._node.context.options, write_options );
+        const options = resolveOptions( this._node.context.options, write_options );
 
         const resolved = path.resolve( options.output );
         options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( resolved );
@@ -201,7 +201,7 @@ export class ChainInternal {
         const map = this.apply( options );
         const source_content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
         if ( map ) {
-            const url = getSourceMappingURL(map, resolved, options);
+            const url = getSourceMappingURL( map, resolved, options );
             // TODO shouldn't url be path.relative?
             const content = source_content + generateSourceMappingURLComment( url, resolved );
             return { resolved, content, map, options };
@@ -222,26 +222,25 @@ function getSourceMappingURL ( map: SourceMap, source: string, options: Options 
     if ( options.sourceMappingURLTemplate === 'inline' ) {
         return map.toUrl();
     }
-    const replacer: Record<string, Function> = {
+    const replacer: Record<string, () => string> = {
         '[absolute-path]': () => source + '.map',
         '[base-path]': () => path.basename( source ) + '.map'
     };
     let sourceMappingURL = options.sourceMappingURLTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        sourceMappingURL = sourceMappingURL.replace( key, replacer[key]());
+        sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
     });
     return sourceMappingURL;
 }
 
-
 function getSourcePath ( node: Node, source: string, options: Options ) {
-    const replacer: Record<string, Function> = {
+    const replacer: Record<string, () => string> = {
         '[absolute-path]': () => source,
         '[relative-path]': () => path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), source )
     };
     let sourcePath = options.sourcePathTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        sourcePath = sourcePath.replace( key, replacer[key]());
+        sourcePath = sourcePath.replace( key, replacer[key]() );
     });
     return slash( sourcePath );
 }

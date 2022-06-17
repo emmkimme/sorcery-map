@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import { Node } from './Node';
-import { Options, parseOptions } from './Options';
+import { Options, resolveOptions } from './Options';
 
 /** @internal */
 export interface NodeCacheByFile {
@@ -21,7 +21,7 @@ export class Context {
         this._nodeCacheByFile = {};
         this._sourceRoots = [];
 
-        options = parseOptions(options);
+        options = resolveOptions( options );
 
         if ( options.sourceRootResolution ) {
             this._sourceRoots.push( path.resolve( options.sourceRootResolution ) );

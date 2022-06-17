@@ -8,7 +8,7 @@ import * as globby from 'globby';
 
 import { injectVersion } from './showHelp';
 import * as sourcery_map from '../';
-import type { Options } from '../Options';
+import { parseCommandLine } from '../Options';
 
 const command = minimist( process.argv.slice( 2 ), {
     alias: {
@@ -41,13 +41,7 @@ else if ( !command.input ) {
 }
 
 else {
-    const options: Options = { 
-        inline: command.datauri,
-        output: command.output || command.input,
-        excludeContent: command.excludeContent,
-        flatten: command.flatten,
-        sourceRoot: command.sourceRoot,
-    };
+    const options = parseCommandLine( command );
     fse.stat( command.input ).then( function ( stats ) {
         if ( stats.isDirectory() ) {
             const globby_options = {

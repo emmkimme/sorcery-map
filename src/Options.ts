@@ -1,3 +1,4 @@
+import type * as minimist from 'minimist';
 import type { SourceMapProps } from './SourceMap';
 
 interface LoadOptions {
@@ -24,7 +25,7 @@ export interface Options extends LoadOptions, SaveOptions {
 }
 
 /** @internal */
-export function parseOptions ( ...raw_options: Options[]): Options {
+export function resolveOptions ( ...raw_options: Options[]): Options {
     const options = Object.assign({}, ...raw_options );
 
     options.flatten = options.flatten || 'full';
@@ -37,5 +38,17 @@ export function parseOptions ( ...raw_options: Options[]): Options {
     const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[base-path]';
     options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || sourceMappingURL;
 
+    return options;
+}
+
+/** @internal */
+export function parseCommandLine ( command: minimist.ParsedArgs ): Options {
+    const options: Options = { 
+        inline: command.datauri,
+        output: command.output || command.input,
+        excludeContent: command.excludeContent,
+        flatten: command.flatten,
+        sourceRoot: command.sourceRoot,
+    };
     return options;
 }

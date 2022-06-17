@@ -33,12 +33,14 @@ This package is a fork of [sorcery](https://github.com/Rich-Harris/sorcery) with
 | API | Command line | Value | Description |
 | ----------- | ----------- | ----------- | ----------- |
 | output | -o, --output | `<file>` | Output file (if absent, will overwrite input) |
-| inline | -d, --datauri | | *deprecated* equivalent to `sourceMappingURL` 'inline' |
+| inline | -d, --datauri | | *deprecated* equivalent to `sourceMappingURLTemplate=inline` |
+| absolutePath | --- | | *deprecated* equivalent to `sourceMappingURLTemplate=[absolute-path]` |
 | excludeContent | -x, --excludeContent | | Don't populate the sourcesContent array |
-| sourceMappingURL | --sourceMappingURL | `[relative-path]` (default)<br/>`inline`<br/>`[absolute-path]`<br/>`[base-path]`| TBD</br>Append map as a data URI rather than separate file<br/>TBD<br/>[not supported yet]|
+| sourceMappingURL | --sourceMappingURL | *deprecated* see `sourceMappingURLTemplate` ||
+| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[base-path]` (default)<br/>`inline`<br/>`[absolute-path]`| TBD</br>Append map as a data URI rather than separate file<br/>TBD|
 | sourcePathTemplate | --sourcePathTemplate | `[relative-path]` (default)<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location <br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[relative-path]``` |
 | sourceRootBase | --base | allows the base to be specified as something other than the destination file |
-| flatten | -f, --flatten | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map until the file (content) exists<br/>do not flatten the map |
+| flatten | -f, --flatten | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map as long as the file (content) exists<br/>do not flatten the map |
 
 ### misc
 | Command line | Description |
