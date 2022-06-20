@@ -23,10 +23,13 @@ export function transform ( transform_options: Options ) {
             .then( ( chain ) => {
                 if ( chain ) {
                     // inline file not found ! to manage
-                    const { resolved, content, map, options } = chain.getContentAndMap( transform_options.output );
-                    if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
+                    const { content, file_map, stream_map, map } = chain.getContentAndMap( transform_options.output );
+                    if ( stream_map ) {
+                        stream_map.end( map.toString(), 'utf-8' );
+                    }
+                    else if ( file_map ) {
                         // fse.ensureDirSync( path.dirname( resolved ) );
-                        fse.writeFileSync( resolved + '.map', map.toString() );
+                        fse.writeFileSync( file_map, map.toString() );
                     }
                     done( undefined, content );
                 }

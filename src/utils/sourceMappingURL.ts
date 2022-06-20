@@ -6,17 +6,15 @@ import * as path from 'path';
 export let SOURCEMAPPING_URL = 'sourceMa';
 SOURCEMAPPING_URL += 'ppingURL';
 
-/** @internal */
 // Matches only the last occurrence of sourceMappingURL
-const sourceMappingValueRegex = RegExp( `\\s*[#@]\\s*${SOURCEMAPPING_URL}\\s*=\\s*([^'"]*)\\s*` );
-export const sourceMappingURLRegex = RegExp(
-    '(?:' + '/\\*' +
-'(?:\\s*\r?\n(?://)?)?' +
-'(?:' + sourceMappingValueRegex.source + ')' +
-'\\s*\\*/' +
-'|' +
-'//(?:' + sourceMappingValueRegex.source + ')' +
-')' + '\\s*'
+
+const sourceMappingValueRegex = /\s*[@,#]\s*sourceMappingURL\s*=\s*([\S ]*)\s*/;
+
+/** @internal */
+export const sourceMappingURLRegex = new RegExp(
+    '(?:\\/\\*' + sourceMappingValueRegex.source + '\\s*\\*\\/)' + 
+    '|'+ 
+    '(?:\\/\\/' + sourceMappingValueRegex.source + '\\s*)'
 );
 
 /** @internal */
@@ -45,7 +43,7 @@ export function generateSourceMappingURLComment ( url: string, dest: string ) {
     url = encodeURI( url );
 
     if ( ext === '.css' ) {
-        return `/*# ${SOURCEMAPPING_URL}=${url} */\n`;
+        return `/*# ${SOURCEMAPPING_URL}=${url} */`;
     }
 
     return `//# ${SOURCEMAPPING_URL}=${url}\n`;

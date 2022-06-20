@@ -2,6 +2,7 @@ import * as path from 'path';
 
 import * as fse from 'fs-extra';
 import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
+import { writable } from 'is-stream';
 
 import { generateSourceMappingURLComment, sourceMappingURLRegex } from './utils/sourceMappingURL';
 import { slash } from './utils/path';
@@ -12,6 +13,7 @@ import type { Options } from './Options';
 import { Node } from './Node';
 import { resolveOptions } from './Options';
 import type { Context } from './Context';
+import type { Writable } from 'stream';
 
 /** @internal */
 export class ChainInternal {
@@ -142,7 +144,7 @@ export class ChainInternal {
             names: allNames,
             mappings
         });
-        const map_sourceRoot = [options.sourceRoot, this._node.map.sourceRoot].find((sourceRoot) => sourceRoot != null);
+        const map_sourceRoot = [ options.sourceRoot, this._node.map.sourceRoot ].find( ( sourceRoot ) => sourceRoot != null );
         if ( map_sourceRoot != null ) {
             map.sourceRoot = map_sourceRoot;
         }
@@ -154,41 +156,56 @@ export class ChainInternal {
         return this._node.trace( oneBasedLineIndex - 1, zeroBasedColumnIndex, null, options );
     }
 
-    write ( dest?: string, write_options?: Options ) {
-        const { resolved, content, map, options } = this.getContentAndMap( dest, write_options );
-        return fse.ensureDir( path.dirname( resolved ) )
+    write ( dest?: string | Writable | Options, write_options?: Options ) {
+        const { file_content, content, file_map, stream_map, map } = this.getContentAndMap( dest, write_options );
+        return fse.ensureDir( path.dirname( file_content ) )
             .then( () => {
                 const promises = [];
                 if ( content ) {
-                    promises.push( fse.writeFile( resolved, content ) );
+                    promises.push( fse.writeFile( file_content, content ) );
                 }
-                if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
-                    promises.push( fse.writeFile( resolved + '.map', map.toString() ) );
+                if ( stream_map ) {
+                    stream_map.end( map.toString(), 'utf-8' );
+                }
+                else if ( file_map ) {
+                    promises.push( fse.writeFile( file_map, map.toString() ) );
                 }
     
                 return Promise.all( promises ).then( () => {});
             });
     }
 
-    writeSync ( dest: string, write_options: Options ) {
-        const { resolved, content, map, options } = this.getContentAndMap( dest, write_options );
-        fse.ensureDirSync( path.dirname( resolved ) );
+    writeSync ( dest: string | Writable | Options, write_options?: Options ) {
+        const { file_content, content, file_map, stream_map, map } = this.getContentAndMap( dest, write_options );
+        fse.ensureDirSync( path.dirname( file_content ) );
         if ( content ) {
-            fse.writeFileSync( resolved, content );
+            fse.writeFileSync( file_content, content );
         }
-        if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
-            fse.writeFileSync( resolved + '.map', map.toString() );
+        if ( stream_map ) {
+            stream_map.end( map.toString(), 'utf-8' );
+        }
+        else if ( file_map ) {
+            fse.writeFileSync( file_map, map.toString() );
         }
     }
     
-    getContentAndMap ( dest?: string, write_options?: Options ) {
+    getContentAndMap ( dest?: string | Writable | Options, write_options?: Options ) {
         if ( typeof dest === 'string' ) {
             write_options = Object.assign({}, write_options );
             write_options.output = dest;
         }
         else if ( typeof dest === 'object' ) {
-            write_options = dest;
-            write_options.output = this._node.file;
+            if ( writable( dest ) ) {
+                write_options = Object.assign({}, write_options );
+                write_options.output = write_options.output || this._node.file;
+                if ( write_options.output == null ) {
+                    throw new Error( 'map file URL is required when using stream output' );
+                }
+            }
+            else {
+                write_options = dest as Options;
+                write_options.output = this._node.file;
+            }
         }
         else {
             write_options = Object.assign({}, write_options );
@@ -196,18 +213,21 @@ export class ChainInternal {
         }
         const options = resolveOptions( this._node.context.options, write_options );
 
-        const resolved = path.resolve( options.output );
-        options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( resolved );
+        const file_content = path.resolve( options.output );
+        options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( file_content );
     
         const map = this.apply( options );
         if ( map ) {
-            const url = getSourceMappingURL( map, resolved, options );
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment( url, resolved ) );
-            return { resolved, content, map, options };
+            const sourceMappingURL = ( options.sourceMappingURLTemplate === 'inline' ) ?  map.toUrl() : getSourceMappingURL( file_content, options );
+            const file_map = ( options.sourceMappingURLTemplate === 'inline' ) ? null : file_content + '.map';
+            const stream_map =  writable( dest ) ? dest : null;
+
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment( sourceMappingURL, file_content ) );
+            return { file_content, content, file_map, stream_map, map };
         }
         else {
             const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
-            return { resolved, content, options };
+            return { file_content, content };
         }
     }
 }
@@ -218,10 +238,7 @@ function tally ( nodes: Node[]) {
     }, 0 );
 }
 
-function getSourceMappingURL ( map: SourceMap, source: string, options: Options ) {
-    if ( options.sourceMappingURLTemplate === 'inline' ) {
-        return map.toUrl();
-    }
+function getSourceMappingURL ( source: string, options: Options ) {
     const replacer: Record<string, () => string> = {
         '[absolute-path]': () => source + '.map',
         '[base-path]': () => path.basename( source ) + '.map'
