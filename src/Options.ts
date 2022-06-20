@@ -1,4 +1,8 @@
+import type { Writable } from 'stream';
+
 import type * as minimist from 'minimist';
+import { writable } from 'is-stream';
+
 import type { SourceMapProps } from './SourceMap';
 
 interface InputOptions {
@@ -39,7 +43,7 @@ export function resolveOptions ( ...raw_options: Options[]): Options {
     const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[base-path]';
     options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || sourceMappingURL;
 
-    if ( options.output ) {
+    if ( typeof options.output === 'string' ) {
         options.output = options.output.replace( /\.map$/, '' );
     }
 
@@ -56,4 +60,30 @@ export function parseCommandLine ( command: minimist.ParsedArgs ): Options {
         sourceRoot: command.sourceRoot,
     };
     return options;
+}
+
+/** @internal */
+export function normalizeOptions ( dest?: string | Writable | Options, write_options?: Options ): { options: Options, map_stream?: Writable } {
+    let options: Options;
+    let map_stream: Writable;
+    if ( typeof dest === 'string' ) {
+        options = Object.assign({}, write_options );
+        options.output = dest;
+    }
+    else if ( typeof dest === 'object' ) {
+        if ( writable( dest ) ) {
+            options = Object.assign({}, write_options );
+            if ( options.output == null ) {
+                throw new Error( 'map file URL is required when using stream output' );
+            }
+            map_stream = dest;
+        }
+        else {
+            options = dest as Options;
+        }
+    }
+    else {
+        options = Object.assign({}, write_options );
+    }
+    return { options, map_stream };
 }

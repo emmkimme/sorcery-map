@@ -1,13 +1,13 @@
 import * as path from 'path';
-import { Transform } from 'stream';
+import { Transform, Writable } from 'stream';
 
 import * as fse from 'fs-extra';
 
-import type { Options } from '../Options';
+import { normalizeOptions, Options } from '../Options';
 import { Context } from '../Context';
 import { ChainInternal } from '../ChainInternal';
 
-export function transform ( transform_options: Options ) {
+export function transform ( dest?: string | Writable | Options, transform_raw_options?: Options ) {
     let source = '';
 
     const liner = new Transform();
@@ -18,18 +18,19 @@ export function transform ( transform_options: Options ) {
     };
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
+        const { options: transform_options } = normalizeOptions(dest, transform_raw_options);
         const context = new Context( path.resolve(), transform_options );
         ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {
                 if ( chain ) {
                     // inline file not found ! to manage
-                    const { content, file_map, stream_map, map } = chain.getContentAndMap( transform_options.output );
-                    if ( stream_map ) {
-                        stream_map.end( map.toString(), 'utf-8' );
+                    const { content, map_file, map_stream, map } = chain.getContentAndMap( dest );
+                    if ( map_stream ) {
+                        map_stream.end( map.toString(), 'utf-8' );
                     }
-                    else if ( file_map ) {
+                    else if ( map_file ) {
                         // fse.ensureDirSync( path.dirname( resolved ) );
-                        fse.writeFileSync( file_map, map.toString() );
+                        fse.writeFileSync( map_file, map.toString() );
                     }
                     done( undefined, content );
                 }

@@ -15,14 +15,11 @@ function exorcist(input, url, root, base, errorOnMissing) {
     sourcePathTemplate: base ? '[relative-path]' : '[absolute-path]',
     // errorOnMissing
   };
-  if (input != null) {
-    options.output = input;
-  }
   if (root != null) {
     options.sourceRoot = root;
   }
 
-  return sourcery_map.transform(options);
+  return sourcery_map.transform(input, options);
 }
 
 var fixtures = __dirname + '/fixtures';
