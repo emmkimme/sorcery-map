@@ -142,7 +142,7 @@ export class ChainInternal {
             names: allNames,
             mappings
         });
-        const map_sourceRoot = (options.sourceRoot != null) ? options.sourceRoot : this._node.map.sourceRoot;
+        const map_sourceRoot = [options.sourceRoot, this._node.map.sourceRoot].find((sourceRoot) => sourceRoot != null);
         if ( map_sourceRoot != null ) {
             map.sourceRoot = map_sourceRoot;
         }
