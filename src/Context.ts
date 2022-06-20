@@ -28,9 +28,9 @@ export class Context {
         if ( options.sourceRootResolution ) {
             this._sourceRoots.push( path.resolve( options.sourceRootResolution ) );
         }
-        const currentDirectory = path.resolve();
-        if  ( !this._sourceRoots.includes( currentDirectory ) ) {
-            this._sourceRoots.push( currentDirectory );
+        const originDirectory = path.resolve( origin );
+        if  ( !this._sourceRoots.includes( originDirectory ) ) {
+            this._sourceRoots.push( originDirectory );
         }
 
         if ( options.content ) {

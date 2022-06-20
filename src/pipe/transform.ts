@@ -22,6 +22,7 @@ export function transform ( transform_options: Options ) {
         ChainInternal.Load( context, transform_options.output, source )
             .then( ( chain ) => {
                 if ( chain ) {
+                    // inline file not found ! to manage
                     const { resolved, content, map, options } = chain.getContentAndMap( transform_options.output );
                     if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
                         fse.ensureDirSync( path.dirname( resolved ) );

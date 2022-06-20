@@ -5,6 +5,7 @@ interface InputOptions {
     content?: { [file: string]: string };
     sourcemaps?: { [file: string]: SourceMapProps };
     sourceRootResolution?: string; // base path of the relative sources path in the map
+    sourceMappingURLResolution?: string;
     verbose?: boolean;
 }
 

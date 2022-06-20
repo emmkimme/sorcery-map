@@ -22,7 +22,8 @@
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
   "bin": {
-    "sourcery-map": "./lib/cjs/bin/index.js"
+    "sourcery-map": "./lib/cjs/bin/sourcery-map.js",
+    "sourcery-exorcist": "./lib/cjs/bin/sourcery-exorcist.js"
   },
   "keywords": [
     "sorcery",

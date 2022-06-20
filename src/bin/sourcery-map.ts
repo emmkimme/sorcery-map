@@ -7,7 +7,7 @@ import * as fse from 'fs-extra';
 import * as globby from 'globby';
 
 import { injectVersion } from './showHelp';
-import * as sourcery_map from '../';
+import * as sourcery_map from '..';
 import { parseCommandLine } from '../Options';
 
 const command = minimist( process.argv.slice( 2 ), {

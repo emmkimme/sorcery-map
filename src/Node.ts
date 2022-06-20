@@ -74,6 +74,9 @@ export class Node {
         this._decodingTime = 0;
     }
 
+    // Use to find the map file
+    // - if node has a physical file content, we have to use the dirname of the file as root
+    // - if node has a memory stream content, we have to use the context origin as root
     get origin () {
         return this._file ? path.dirname( this._file ) : this._context.origin;
     }
@@ -175,14 +178,12 @@ export class Node {
             if ( content == null ) {
                 return Promise.resolve();
             }
-
             return getMap( this ).then( map => {
                 this._map = map;
                 if ( map == null ) {
                     return Promise.resolve();
                 }
                 this._resolveSources();
-
                 return Promise.all( this._sources.map( node => node._load() ) )
                     .then( () => {});
             });
@@ -215,10 +216,8 @@ export class Node {
         const sourcesContent = map.sourcesContent || [];
 
         const mapSourceRoot = map.sourceRoot ? manageFileProtocol( map.sourceRoot ) : '';
-        const sourceRoots = this._context.sourceRoots.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
-        if ( this._file ) {
-            sourceRoots.unshift( path.resolve( this.origin, mapSourceRoot ) );
-        }
+        const sourceRoots = ( this._file ) ? [ path.resolve( path.dirname( this._file ), mapSourceRoot ) ] : [];
+        sourceRoots.concat( this._context.sourceRoots.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) ) );
 
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];
