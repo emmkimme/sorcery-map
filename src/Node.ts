@@ -215,13 +215,14 @@ export class Node {
 
         const sourcesContent = map.sourcesContent || [];
 
+        const sourceRootBases = ( this._file ) ? [ path.dirname( this._file ), ...this._context.sourceRoots ] : this._context.sourceRoots;
+
         const mapSourceRoot = map.sourceRoot ? manageFileProtocol( map.sourceRoot ) : '';
-        const sourceRoots = ( this._file ) ? [ path.resolve( path.dirname( this._file ), mapSourceRoot ) ] : [];
-        sourceRoots.concat( this._context.sourceRoots.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) ) );
+        const sourceRoots = sourceRootBases.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
 
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];
-            if ( source ) {
+            if ( source && sourceRoots) {
                 const fileResolved = sourceRoots
                     .map( ( sourceRoot ) => {
                         return path.resolve( sourceRoot, source );
