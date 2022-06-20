@@ -222,7 +222,7 @@ export class Node {
 
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];
-            if ( source && sourceRoots) {
+            if ( source && sourceRoots ) {
                 const fileResolved = sourceRoots
                     .map( ( sourceRoot ) => {
                         return path.resolve( sourceRoot, source );

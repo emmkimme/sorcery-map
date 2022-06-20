@@ -39,6 +39,10 @@ export function resolveOptions ( ...raw_options: Options[]): Options {
     const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[base-path]';
     options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || sourceMappingURL;
 
+    if ( options.output ) {
+        options.output = options.output.replace( /\.map$/, '' );
+    }
+
     return options;
 }
 

@@ -19,43 +19,112 @@ This package is a fork of [sorcery](https://github.com/Rich-Harris/sorcery) with
 
 **Beware**, all these features are experimental and not fully covered by tests, if you find an issue, do not hesitate to create a bug or contribute ;-)
 
+## Usage
+
+First, install sourcery-map globally:
+
+```bash
+npm install -g sourcery-map
+```
+
+## Command line usage
+
+### sourcery-map
+
+```
+  Usage:
+    sourcery-map <input file> [options]
+
+  Options:
+    -h, --help                      Show help message
+    -v, --version                   Show version
+    -i, --input <file|folder>       Input file (option will override default provided value)
+    -o, --output <file|folder>      Output file (if absent, will overwrite input)
+    -d, --datauri                   Append map as a data URI, rather than separate file
+    -x, --excludeContent            Don't populate the sourcesContent array
+```
+
+Examples:
+
+```bash
+# overwrite sourcemap in place (will write map to
+# some/generated/code.min.js.map, and update
+# sourceMappingURL comment if necessary
+sourcery-map -i some/generated/code.min.js
+
+# append flattened sourcemap as an inline data URI
+# (will delete existing .map file, if applicable)
+sourcery-map -d -i some/generated/code.min.js
+
+# write to a new file (will create newfile.js and
+# newfile.js.map)
+sourcery-map -i some/generated/code.min.js -o newfile.js
+```
+
+### sourcery-exorcist
+
+  Externalizes the source map of the file streamed in.
+
+  The source map is written as JSON to map_file, and the original file is streamed out with its
+  sourceMappingURL set to the path of map_file (or to the value of the --url option).
+
+```
+  Usage:
+    sourcery-exorcist <map file> [options]
+
+  Options:
+    --base -b   Base path for calculating relative source paths.
+                (default: use absolute paths)
+
+    --root -r   Root URL for loading relative source paths.
+                Set as sourceRoot in the source map.
+                (default: '')
+
+    --url -u   Full URL to source map.
+              Set as sourceMappingURL in the output stream.
+              (default: map_file)
+
+    --error-on-missing -e   Abort with error if no map is found in the stream.
+                          (default: warn but still pipe through source)
+
+Examples:
+
+  Bundle main.js with browserify into bundle.js and externalize the map to bundle.js.map.
+
+    browserify main.js --debug | sourcery-exorcist bundle.js.map > bundle.js
+
+
 ## Options
 
 ### Parsing map (load, loadSync)
-| API | Command line | Value | Description |
-| ----------- | ----------- | ----------- | ----------- |
-| --- | -i, --input | `<file>`<br/>`<folder>` | Input file<br/>Input folder |
-| content | --- | a map of `filename: contents` pairs. | `filename` will be resolved against the current working directory if needs be |
-| sourcemaps | --- | a map of `filename: sourcemap` pairs | where `filename` is the name of the file the sourcemap is related to. This will override any `sourceMappingURL` comments in the file itself |
-| sourceRootResolution | --- | <folder> | base path of the relative sources path in the map |
+| API                  | Command line         | Value                                | Description |
+| -------------------- | -------------------- | ------------------------------------ | ----------- |
+| ---                  | -i, --input          | `<file>`<br/>`<folder>`              | Input file<br/>Input folder |
+| content              | ---                  | a map of `filename: contents` pairs. | `filename` will be resolved against the current working directory if needs be |
+| sourcemaps           | ---                  | a map of `filename: sourcemap` pairs | where `filename` is the name of the file the sourcemap is related to. This will override any `sourceMappingURL` comments in the file itself |
+| sourceRootResolution | ---                  | <folder>                             | base path of the relative sources path in the map |
 
 ### Generating map (apply, write, writeSync)
-| API | Command line | Value | Description |
-| ----------- | ----------- | ----------- | ----------- |
-| output | -o, --output | `<file>` | Output file (if absent, will overwrite input) |
-| inline | -d, --datauri | flag | *deprecated* equivalent to `sourceMappingURLTemplate=inline` |
-| absolutePath | --- | flag | *deprecated* equivalent to `sourceMappingURLTemplate=[absolute-path]` |
-| excludeContent | -x, --excludeContent | flag | Don't populate the sourcesContent array |
-| sourceMappingURL | --sourceMappingURL | | *deprecated* see `sourceMappingURLTemplate` ||
-| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[base-path]` (default)<br/>`inline`<br/>`[absolute-path]`| TBD</br>Append map as a data URI rather than separate file<br/>TBD|
-| sourcePathTemplate | --sourcePathTemplate | `[relative-path]` (default)<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location <br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[relative-path]``` |
-| sourceRootBase | --base | `<folder>` | allows the base to be specified as something other than the destination file |
-| flatten | -f, --flatten | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map as long as the file (content) exists<br/>do not flatten the map |
+| API                  | Command line         | Value       | Description |
+| -------------------- | -------------------- | ----------- | ----------- |
+| output               | -o, --output         | `<file>`    | Output file (if absent, will overwrite input) |
+| inline               | -d, --datauri        | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=inline` |
+| absolutePath         | ---                  | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=[absolute-path]` |
+| excludeContent       | -x, --excludeContent | flag        | Don't populate the sourcesContent array |
+| sourceMappingURL     | --sourceMappingURL   |             | *deprecated* see `sourceMappingURLTemplate` ||
+| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[base-path]` (default)<br/>`inline`<br/>`[absolute-path]`<br>`<string>`| TBD</br>Append map as a data URI rather than separate file<br/>TBD|
+| sourcePathTemplate   | --sourcePathTemplate | `[relative-path]` (default)<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location <br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[relative-path]``` |
+| sourceRootBase       | --base               | `<folder>`  | allows the base to be specified as something other than the destination file |
+| flatten              | -f, --flatten        | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map as long as the file (content) exists<br/>do not flatten the map |
 
 ### misc
-| Command line | Description |
-| ----------- |----------- |
-| -h, --help | Show help message |
+| Command line  | Description |
+| ------------- |----------- |
+| -h, --help    | Show help message |
 | -v, --version | Show version |
 
 
 ## Usage as a node module
-
-Install sourcery-map locally:
-
-```bash
-npm install sourcery-map
-```
 
 ```js
 var sourcery_map = require( 'sourcery-map' );
@@ -120,36 +189,6 @@ sourcery_map.load( 'some/generated/code.min.js', {
 });
 ```
 Any files not found will be read from the filesystem as normal.
-
-### Command line usage
-
-First, install sourcery-map globally:
-
-```bash
-npm install -g sourcery-map
-```
-
-```
-  Usage:
-    sourcery-map [options]
-```
-
-Examples:
-
-```bash
-# overwrite sourcemap in place (will write map to
-# some/generated/code.min.js.map, and update
-# sourceMappingURL comment if necessary
-sourcery-map -i some/generated/code.min.js
-
-# append flattened sourcemap as an inline data URI
-# (will delete existing .map file, if applicable)
-sourcery-map -d -i some/generated/code.min.js
-
-# write to a new file (will create newfile.js and
-# newfile.js.map)
-sourcery-map -i some/generated/code.min.js -o newfile.js
-```
 
 ### Exorcist-like [experimental]
 Can replace [exorcist](https://www.npmjs.com/package/exorcist)

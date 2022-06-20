@@ -19,7 +19,7 @@ export function transform ( transform_options: Options ) {
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
         const context = new Context( path.resolve(), transform_options );
-        ChainInternal.Load( context, transform_options.output, source )
+        ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {
                 if ( chain ) {
                     // inline file not found ! to manage

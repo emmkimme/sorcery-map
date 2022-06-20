@@ -22,6 +22,7 @@ const command = minimist( process.argv.slice( 2 ), {
         // b: 'base'
     }
 });
+command.input = command.input || command._.shift();
 
 if ( command.help ) {
     injectVersion( process.stdout );
@@ -42,32 +43,33 @@ else if ( !command.input ) {
 
 else {
     const options = parseCommandLine( command );
-    fse.stat( command.input ).then( function ( stats ) {
-        if ( stats.isDirectory() ) {
-            const globby_options = {
-                cwd: command.input
-            };
-            return globby( '**/*.js', globby_options )
-                .then( ( files ) => {
-                    return files.reduce( ( promise, file ) => {
-                        return promise.then( function () {
-                            const input = path.join( command.input, file );
-                            const output = path.join( options.output, file );
+    fse.stat( command.input )
+        .then( function ( stats ) {
+            if ( stats.isDirectory() ) {
+                const globby_options = {
+                    cwd: command.input
+                };
+                return globby( '**/*.js', globby_options )
+                    .then( ( files ) => {
+                        return files.reduce( ( promise, file ) => {
+                            return promise.then( function () {
+                                const input = path.join( command.input, file );
+                                const output = path.join( options.output, file );
 
-                            const local_options = Object.assign({}, options, { output });
-                            return sourcery_map.load( input, local_options ).then( ( chain ) => {
-                                return chain.write( output, local_options );
+                                const local_options = Object.assign({}, options, { output });
+                                return sourcery_map.load( input, local_options ).then( ( chain ) => {
+                                    return chain.write( output, local_options );
+                                });
                             });
-                        });
-                    }, Promise.resolve() );
+                        }, Promise.resolve() );
+                    });
+            }
+            else {
+                return sourcery_map.load( command.input, options ).then( ( chain ) => {
+                    return chain.write( options.output, options );
                 });
-        }
-        else {
-            return sourcery_map.load( command.input, options ).then( ( chain ) => {
-                return chain.write( options.output, options );
-            });
-        }
-    })
+            }
+        })
         .catch( ( err: unknown ) => {
             setTimeout( () => {
                 throw err;
