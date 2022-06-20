@@ -5,3 +5,4 @@ cli-test
 dist
 lib
 coverage
+.nyc_output

@@ -25,7 +25,7 @@ export function transform ( transform_options: Options ) {
                     // inline file not found ! to manage
                     const { resolved, content, map, options } = chain.getContentAndMap( transform_options.output );
                     if ( map && options.sourceMappingURLTemplate !== 'inline' ) {
-                        fse.ensureDirSync( path.dirname( resolved ) );
+                        // fse.ensureDirSync( path.dirname( resolved ) );
                         fse.writeFileSync( resolved + '.map', map.toString() );
                     }
                     done( undefined, content );

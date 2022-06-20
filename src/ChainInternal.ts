@@ -129,10 +129,10 @@ export class ChainInternal {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        const file = path.basename( this._node.file || this._node.map.file );
+        const map_file = path.basename( this._node.file || this._node.map.file );
         const map = new SourceMap({
             version: 3,
-            file,
+            file: map_file,
             sources: allSources.map( ( sourceNode ) => {
                 return getSourcePath( this._node, sourceNode.file, options );
             }),
@@ -142,8 +142,9 @@ export class ChainInternal {
             names: allNames,
             mappings
         });
-        if ( options.sourceRoot != null ) {
-            map.sourceRoot = options.sourceRoot;
+        const map_sourceRoot = (options.sourceRoot != null) ? options.sourceRoot : this._node.map.sourceRoot;
+        if ( map_sourceRoot != null ) {
+            map.sourceRoot = map_sourceRoot;
         }
         return map;
     }
@@ -199,15 +200,14 @@ export class ChainInternal {
         options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( resolved );
     
         const map = this.apply( options );
-        const source_content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
         if ( map ) {
             const url = getSourceMappingURL( map, resolved, options );
-            // TODO shouldn't url be path.relative?
-            const content = source_content + generateSourceMappingURLComment( url, resolved );
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment( url, resolved ) );
             return { resolved, content, map, options };
         }
         else {
-            return { resolved, content: source_content, options };
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
+            return { resolved, content, options };
         }
     }
 }

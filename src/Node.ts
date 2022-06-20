@@ -204,10 +204,6 @@ export class Node {
     private _resolveSources () {
         const map = this._map;
 
-        // Browserify or similar tools when inlining the map, set the file to a generic name like "generated.js"
-        // We restore the proper name here
-        map.file = this._file || map.file;
-
         const hrDecodingStart = process.hrtime();
         this._mappings = decode( map.mappings );
         const hrDecodingTime = process.hrtime( hrDecodingStart );
