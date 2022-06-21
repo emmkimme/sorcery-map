@@ -1,8 +1,14 @@
 import type { Node } from '../Node';
-import type { SourceMapData } from '../SourceMap';
+import type { SourceMapProps } from '../SourceMap';
 
 import { getMapFromUrl, getMapFromUrlSync } from './getMapFromUrl.js';
 import { getSourceMappingURLData } from './sourceMappingURL';
+
+/** @internal */
+export interface SourceMapData {
+    sourceMap?: SourceMapProps,
+    commentBlock?: boolean
+}
 
 /** @internal */
 export function getMapData ( node: Node ): Promise<SourceMapData | null> {
@@ -13,7 +19,7 @@ export function getMapData ( node: Node ): Promise<SourceMapData | null> {
         const sourceMappingURLData = getSourceMappingURLData( node.content );
         if ( sourceMappingURLData ) {
             return getMapFromUrl( sourceMappingURLData.sourceMappingURL, node.origin )
-                .then((sourceMap) => {
+                .then( ( sourceMap ) => {
                     return { sourceMap, commentBlock: sourceMappingURLData.commentBlock };
                 })
                 .catch( ( err ) => {

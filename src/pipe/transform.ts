@@ -18,7 +18,7 @@ export function transform ( dest?: string | Writable | Options, transform_raw_op
     };
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
-        const { options: transform_options } = normalizeOuputOptions(dest, transform_raw_options);
+        const { options: transform_options } = normalizeOuputOptions( dest, transform_raw_options );
         const context = new Context( path.resolve(), transform_options );
         ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {

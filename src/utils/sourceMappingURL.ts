@@ -22,7 +22,7 @@ export interface SourceMappingURLData {
 }
 
 /** @internal */
-export function getSourceMappingURLData ( str: string ): SourceMappingURLData {
+export function getSourceMappingURLData ( str: string ): SourceMappingURLData | null {
     if ( !str ) {
         return null;
     }
@@ -31,20 +31,28 @@ export function getSourceMappingURLData ( str: string ): SourceMappingURLData {
     if ( !candidatsRegExp ) {
         return null;
     }
+
     // First index contains the full sourceMappingURL comment
-    // Second index contains the sourceMappingURL value if it is a CSS content (could be null)
-    // third index contains the sourceMappingURL value if it is a JS content (could be null)
+    // Second index contains the sourceMappingURL value if it is a CSS content, commentBlock is true (could be null)
+    // third index contains the sourceMappingURL value if it is a JS content, commentBlock is false (could be null)
    
     // Clean up ahead and retain the latest non-empty value
     const candidats = candidatsRegExp.map( candidat => candidat && candidat.replace( /\r?\n|\r/g, '' ).trim() ).filter( candidat => candidat && candidat.length );
     const sourceMappingURL = candidats && candidats.length > 1 ? candidats[candidats.length - 1] : null;
-    return sourceMappingURL ? { sourceMappingURL : decodeURI( sourceMappingURL ), commentBlock: candidatsRegExp[0][1] === '*' } : {};
+    if ( !sourceMappingURL ) {
+        return null;
+    }
+
+    return {
+        sourceMappingURL : decodeURI( sourceMappingURL ),
+        commentBlock: candidatsRegExp[0][1] === '*'
+    };
 }
 
 /** @internal */
 export function generateSourceMappingURLComment ( sourceMappingURLData: SourceMappingURLData ) {
     const sourceMappingURL = encodeURI( sourceMappingURLData.sourceMappingURL );
-    if (sourceMappingURLData.commentBlock ) {
+    if ( sourceMappingURLData.commentBlock ) {
         return `/*# ${SOURCEMAPPING_URL}=${sourceMappingURL} */`;
     }
     else {

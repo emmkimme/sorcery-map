@@ -11,12 +11,6 @@ export interface SourceMapProps {
     sourceRoot?: string;
 }
 
-/** @internal */
-export interface SourceMapData {
-    sourceMap?: SourceMapProps,
-    commentBlock?: boolean
-}
-
 export class SourceMap implements SourceMapProps {
     version: 3;
 

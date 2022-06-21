@@ -63,7 +63,7 @@ export function normalizeOuputOptions ( destOrStreamOrOptions?: string | Writabl
     let map_output: string | Writable;
     if ( typeof destOrStreamOrOptions === 'string' ) {
         options = Object.assign({}, write_options );
-        map_output = destOrStreamOrOptions.replace( /\.map$/, '');
+        map_output = destOrStreamOrOptions.replace( /\.map$/, '' );
     }
     else if ( typeof destOrStreamOrOptions === 'object' ) {
         if ( writable( destOrStreamOrOptions ) ) {
@@ -72,7 +72,7 @@ export function normalizeOuputOptions ( destOrStreamOrOptions?: string | Writabl
             map_output = destOrStreamOrOptions;
         }
         else {
-            options = Object.assign({}, destOrStreamOrOptions);
+            options = Object.assign({}, destOrStreamOrOptions );
         }
     }
     else {

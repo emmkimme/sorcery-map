@@ -3,14 +3,14 @@ import * as path from 'path';
 import { decode, SourceMapMappings } from 'sourcemap-codec';
 import * as fse from 'fs-extra';
 
-import { getMapData, getMapDataSync } from './utils/getMap';
+import { getMapData, getMapDataSync, SourceMapData } from './utils/getMap';
 import { getContent, getContentSync } from './utils/getContent';
 import { manageFileProtocol } from './utils/path';
 
 import type { Trace } from './Trace';
 import type { Options } from './Options';
 import type { Context } from './Context';
-import type { SourceMapData, SourceMapProps } from './SourceMap';
+import type { SourceMapProps } from './SourceMap';
 
 /** @internal */
 export class Node {
@@ -20,7 +20,7 @@ export class Node {
             file = path.resolve( manageFileProtocol( file ) );
             node = context.cache[file];
             if ( node ) {
-                if ( node._content === undefined && content) {
+                if ( node._content === undefined && content ) {
                     node._content = content;
                 }
                 if ( node._mapData === undefined && map ) {

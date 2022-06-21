@@ -190,11 +190,11 @@ export class ChainInternal {
     }
     
     getContentAndMap ( destOrStreamOrOptions?: string | Writable | Options, write_raw_options?: Options ) {
-        const { options: write_options, map_output } = normalizeOuputOptions(destOrStreamOrOptions, write_raw_options);
+        const { options: write_options, map_output } = normalizeOuputOptions( destOrStreamOrOptions, write_raw_options );
 
         const options = resolveOptions( this._node.context.options, write_options );
 
-        const content_file = (typeof map_output === 'string') ? path.resolve( map_output ) : this._node.file;
+        const content_file = ( typeof map_output === 'string' ) ? path.resolve( map_output ) : this._node.file;
         options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : content_file ? path.dirname( content_file ) : path.resolve();
     
         const map = this.apply( options );
@@ -205,9 +205,9 @@ export class ChainInternal {
 
             const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null : content_file ? content_file + '.map' : null;
             const sourceMappingURL = ( options.sourceMappingURLTemplate === 'inline' ) ?  map.toUrl() : computeSourceMappingURL( map_file, options );
-            const map_stream = ( writable(map_output) ) ? map_output : null;
+            const map_stream = ( writable( map_output ) ) ? map_output : null;
 
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment( { sourceMappingURL, commentBlock: this._node.mapData.commentBlock } ));
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment({ sourceMappingURL, commentBlock: this._node.mapData.commentBlock }) );
             return { content_file, content, map_file, map_stream, map };
         }
         else {
@@ -230,7 +230,7 @@ function computeSourceMappingURL ( map_file: string, options: Options ) {
     };
     let sourceMappingURL = options.sourceMappingURLTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        if (sourceMappingURL.includes(key)) {
+        if ( sourceMappingURL.includes( key ) ) {
             sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
         }
     });
@@ -244,7 +244,7 @@ function computeSourcePath ( node: Node, content_file: string, options: Options 
     };
     let sourcePath = options.sourcePathTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        if (sourcePath.includes(key)) {
+        if ( sourcePath.includes( key ) ) {
             sourcePath = sourcePath.replace( key, replacer[key]() );
         }
     });
