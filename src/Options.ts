@@ -73,7 +73,7 @@ export function normalizeOptions ( dest?: string | Writable | Options, write_opt
     else if ( typeof dest === 'object' ) {
         if ( writable( dest ) ) {
             options = Object.assign({}, write_options );
-            if ( options.output == null ) {
+            if ( options.sourceMappingURLTemplate == null ) {
                 throw new Error( 'map file URL is required when using stream output' );
             }
             map_stream = dest;

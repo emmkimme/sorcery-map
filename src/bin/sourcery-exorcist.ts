@@ -40,7 +40,7 @@ if ( !mapfile ) {
 const options = parseCommandLine( command );
 
 process.stdin
-    .pipe( transform( options ) )
+    .pipe( transform( mapfile, options ) )
     .on( 'error', onerror )
     .on( 'missing-map', console.error.bind( console ) )
     .pipe( process.stdout );
