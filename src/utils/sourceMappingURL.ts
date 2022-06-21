@@ -38,7 +38,7 @@ export function getSourceMappingURLData ( str: string ): SourceMappingURLData | 
    
     // Clean up ahead and retain the latest non-empty value
     const candidats = candidatsRegExp.map( candidat => candidat && candidat.replace( /\r?\n|\r/g, '' ).trim() ).filter( candidat => candidat && candidat.length );
-    const sourceMappingURL = candidats && candidats.length > 1 ? candidats[candidats.length - 1] : null;
+    const sourceMappingURL = candidats.length > 1 ? candidats[candidats.length - 1] : null;
     if ( !sourceMappingURL ) {
         return null;
     }
