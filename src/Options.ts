@@ -58,26 +58,25 @@ export function parseCommandLine ( command: minimist.ParsedArgs ): Options {
 }
 
 /** @internal */
-export function normalizeOuputOptions ( destOrStreamOrOptions?: string | Writable | Options, write_options?: Options ): { options: Options, map_stream?: Writable } {
+export function normalizeOuputOptions ( destOrStreamOrOptions?: string | Writable | Options, write_options?: Options ): { options: Options, map_output?: string | Writable } {
     let options: Options;
-    let map_stream: Writable;
+    let map_output: string | Writable;
     if ( typeof destOrStreamOrOptions === 'string' ) {
         options = Object.assign({}, write_options );
+        map_output = destOrStreamOrOptions.replace( /\.map$/, '');
     }
     else if ( typeof destOrStreamOrOptions === 'object' ) {
         if ( writable( destOrStreamOrOptions ) ) {
             options = Object.assign({}, write_options );
-            if ( options.sourceMappingURLTemplate == null ) {
-                throw new Error( 'map file URL is required when using stream output' );
-            }
-            map_stream = destOrStreamOrOptions;
+
+            map_output = destOrStreamOrOptions;
         }
         else {
-            options = destOrStreamOrOptions as Options;
+            options = Object.assign({}, destOrStreamOrOptions);
         }
     }
     else {
         options = Object.assign({}, write_options );
     }
-    return { options, map_stream };
+    return { options, map_output };
 }

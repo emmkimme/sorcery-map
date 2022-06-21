@@ -2,6 +2,7 @@ import * as path from 'path';
 
 import * as fse from 'fs-extra';
 import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
+import { writable } from 'is-stream';
 
 import { generateSourceMappingURLComment, sourceMappingURLRegex } from './utils/sourceMappingURL';
 import { slash } from './utils/path';
@@ -67,7 +68,7 @@ export class ChainInternal {
             const traced = this._node.sources[ segment[1] ].trace( // source
                 segment[2], // source code line
                 segment[3], // source code column
-                this._node.map.names[ segment[4] ],
+                this._node.mapData.sourceMap.names[ segment[4] ],
                 options
             );
 
@@ -121,7 +122,7 @@ export class ChainInternal {
         else {
             allMappings = this._node.mappings;
             allSources = this._node.sources;
-            allNames = this._node.map.names;
+            allNames = this._node.mapData.sourceMap.names;
         }
 
         // Encode mappings
@@ -130,12 +131,12 @@ export class ChainInternal {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        const map_file = path.basename( this._node.file || this._node.map.file );
+        const map_file = path.basename( this._node.file || this._node.mapData.sourceMap.file );
         const map = new SourceMap({
             version: 3,
             file: map_file,
             sources: allSources.map( ( sourceNode ) => {
-                return getSourcePath( this._node, sourceNode.file, options );
+                return computeSourcePath( this._node, sourceNode.file, options );
             }),
             sourcesContent: allSources.map( ( sourceNode ) => {
                 return options.excludeContent ? null : sourceNode.content;
@@ -143,7 +144,7 @@ export class ChainInternal {
             names: allNames,
             mappings
         });
-        const map_sourceRoot = [ options.sourceRoot, this._node.map.sourceRoot ].find( ( sourceRoot ) => sourceRoot != null );
+        const map_sourceRoot = [ options.sourceRoot, this._node.mapData.sourceMap.sourceRoot ].find( ( sourceRoot ) => sourceRoot != null );
         if ( map_sourceRoot != null ) {
             map.sourceRoot = map_sourceRoot;
         }
@@ -189,19 +190,24 @@ export class ChainInternal {
     }
     
     getContentAndMap ( destOrStreamOrOptions?: string | Writable | Options, write_raw_options?: Options ) {
-        const { options: write_options, map_stream } = normalizeOuputOptions(destOrStreamOrOptions, write_raw_options);
+        const { options: write_options, map_output } = normalizeOuputOptions(destOrStreamOrOptions, write_raw_options);
 
         const options = resolveOptions( this._node.context.options, write_options );
 
-        const content_file = (typeof destOrStreamOrOptions === 'string') ? path.resolve( destOrStreamOrOptions ) : this._node.file;
+        const content_file = (typeof map_output === 'string') ? path.resolve( map_output ) : this._node.file;
         options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : content_file ? path.dirname( content_file ) : path.resolve();
     
         const map = this.apply( options );
         if ( map ) {
-            const sourceMappingURL = ( options.sourceMappingURLTemplate === 'inline' ) ?  map.toUrl() : getSourceMappingURL( content_file, options );
-            const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null : content_file + '.map';
+            // if ( options.sourceMappingURLTemplate == null ) {
+            //     throw new Error( 'map file URL is required when using stream output' );
+            // }
 
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment( sourceMappingURL, content_file ) );
+            const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null : content_file ? content_file + '.map' : null;
+            const sourceMappingURL = ( options.sourceMappingURLTemplate === 'inline' ) ?  map.toUrl() : computeSourceMappingURL( map_file, options );
+            const map_stream = ( writable(map_output) ) ? map_output : null;
+
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment( { sourceMappingURL, commentBlock: this._node.mapData.commentBlock } ));
             return { content_file, content, map_file, map_stream, map };
         }
         else {
@@ -217,26 +223,30 @@ function tally ( nodes: Node[]) {
     }, 0 );
 }
 
-function getSourceMappingURL ( source: string, options: Options ) {
+function computeSourceMappingURL ( map_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
-        '[absolute-path]': () => source + '.map',
-        '[base-path]': () => path.basename( source ) + '.map'
+        '[absolute-path]': () => map_file,
+        '[base-path]': () => path.basename( map_file )
     };
     let sourceMappingURL = options.sourceMappingURLTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
+        if (sourceMappingURL.includes(key)) {
+            sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
+        }
     });
     return sourceMappingURL;
 }
 
-function getSourcePath ( node: Node, source: string, options: Options ) {
+function computeSourcePath ( node: Node, content_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
-        '[absolute-path]': () => source,
-        '[relative-path]': () => path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), source )
+        '[absolute-path]': () => content_file,
+        '[relative-path]': () => path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), content_file )
     };
     let sourcePath = options.sourcePathTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
-        sourcePath = sourcePath.replace( key, replacer[key]() );
+        if (sourcePath.includes(key)) {
+            sourcePath = sourcePath.replace( key, replacer[key]() );
+        }
     });
     return slash( sourcePath );
 }
