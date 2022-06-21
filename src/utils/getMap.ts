@@ -1,26 +1,26 @@
 import type { Node } from '../Node';
 import type { SourceMapProps } from '../SourceMap';
 
-import { getMapFromUrl, getMapFromUrlSync } from './getMapFromUrl.js';
-import { getSourceMappingURLData } from './sourceMappingURL';
+import { getSourceMapFromUrl, getSourceMapFromUrlSync } from './getMapFromUrl.js';
+import { getSourceMappingURLInfo } from './sourceMappingURL';
 
 /** @internal */
-export interface SourceMapData {
-    sourceMap?: SourceMapProps,
+export interface SourceMapInfo {
+    map?: SourceMapProps,
     commentBlock?: boolean
 }
 
 /** @internal */
-export function getMapData ( node: Node ): Promise<SourceMapData | null> {
+export function getSourceMapInfo ( node: Node ): Promise<SourceMapInfo | null> {
     // 'undefined' never seen
     // 'null' seen but empty
-    const mapData = node.mapData;
+    const mapData = node.mapInfo;
     if ( mapData === undefined ) {
-        const sourceMappingURLData = getSourceMappingURLData( node.content );
-        if ( sourceMappingURLData ) {
-            return getMapFromUrl( sourceMappingURLData.sourceMappingURL, node.origin )
+        const sourceMappingURLInfo = getSourceMappingURLInfo( node.content );
+        if ( sourceMappingURLInfo ) {
+            return getSourceMapFromUrl( sourceMappingURLInfo.url, node.origin )
                 .then( ( sourceMap ) => {
-                    return { sourceMap, commentBlock: sourceMappingURLData.commentBlock };
+                    return { sourceMap, commentBlock: sourceMappingURLInfo.commentBlock };
                 })
                 .catch( ( err ) => {
                 // throw new Error(`Error when reading map ${url}`);
@@ -33,16 +33,16 @@ export function getMapData ( node: Node ): Promise<SourceMapData | null> {
 }
 
 /** @internal */
-export function getMapDataSync ( node: Node ): SourceMapData | null {
+export function getSourceMapInfoSync ( node: Node ): SourceMapInfo | null {
     // 'undefined' never seen
     // 'null' seen but empty
-    const mapData = node.mapData;
+    const mapData = node.mapInfo;
     if ( mapData === undefined ) {
-        const sourceMappingURLData = getSourceMappingURLData( node.content );
-        if ( sourceMappingURLData ) {
+        const sourceMappingURLInfo = getSourceMappingURLInfo( node.content );
+        if ( sourceMappingURLInfo ) {
             try {
-                const sourceMap = getMapFromUrlSync( sourceMappingURLData.sourceMappingURL, node.origin );
-                return { sourceMap, commentBlock: sourceMappingURLData.commentBlock };
+                const sourceMap = getSourceMapFromUrlSync( sourceMappingURLInfo.url, node.origin );
+                return { map: sourceMap, commentBlock: sourceMappingURLInfo.commentBlock };
             }
             catch ( err ) {
                 // throw new Error(`Error when reading map ${url}`);

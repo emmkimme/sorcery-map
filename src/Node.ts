@@ -3,7 +3,7 @@ import * as path from 'path';
 import { decode, SourceMapMappings } from 'sourcemap-codec';
 import * as fse from 'fs-extra';
 
-import { getMapData, getMapDataSync, SourceMapData } from './utils/getMap';
+import { getSourceMapInfo, getSourceMapInfoSync, SourceMapInfo } from './utils/getMap';
 import { getContent, getContentSync } from './utils/getContent';
 import { manageFileProtocol } from './utils/path';
 
@@ -23,8 +23,8 @@ export class Node {
                 if ( node._content === undefined && content ) {
                     node._content = content;
                 }
-                if ( node._mapData === undefined && map ) {
-                    node._mapData = { sourceMap: map, commentBlock: true };
+                if ( node._mapInfo === undefined && map ) {
+                    node._mapInfo = { map: map, commentBlock: true };
                 }
             }
             else {
@@ -55,7 +55,7 @@ export class Node {
     private readonly _context: Context;
     private readonly _file?: string | null;
     private _content?: string | null;
-    private _mapData?: SourceMapData | null;
+    private _mapInfo?: SourceMapInfo | null;
     private _mappings: SourceMapMappings;
     private _sources: Node[];
     private _decodingTime: number;
@@ -65,7 +65,7 @@ export class Node {
 
         this._file = file;
         this._content = content;
-        this._mapData = map ? { sourceMap: map, commentBlock: true } : undefined;
+        this._mapInfo = map ? { map: map, commentBlock: true } : undefined;
 
         if ( ( this._file == null ) && ( this._content == null ) ) {
             throw new Error( 'A source must specify either file or content' );
@@ -97,8 +97,8 @@ export class Node {
         return this._file;
     }
 
-    get mapData () {
-        return this._mapData;
+    get mapInfo () {
+        return this._mapInfo;
     }
 
     get decodingTime () {
@@ -110,7 +110,7 @@ export class Node {
     }
 
     get isOriginalSource () {
-        return ( this._mapData == null );
+        return ( this._mapInfo == null );
     }
 
     get isCompleteSourceContent () {
@@ -158,7 +158,7 @@ export class Node {
                     const nameIndex = segments[i][4] || 0;
 
                     const parent = this._sources[sourceFileIndex];
-                    return parent.trace( sourceCodeLine, sourceCodeColumn, this._mapData.sourceMap.names[nameIndex] || name, options );
+                    return parent.trace( sourceCodeLine, sourceCodeColumn, this._mapInfo.map.names[nameIndex] || name, options );
                 }
             }
         }
@@ -169,7 +169,7 @@ export class Node {
         const nameIndex = segments[0][4] || 0;
 
         const parent = this._sources[sourceFileIndex];
-        return parent.trace( sourceCodeLine, null, this._mapData.sourceMap.names[nameIndex] || name, options );
+        return parent.trace( sourceCodeLine, null, this._mapInfo.map.names[nameIndex] || name, options );
     }
 
     private _load (): Promise<void> {
@@ -178,9 +178,9 @@ export class Node {
             if ( content == null ) {
                 return Promise.resolve();
             }
-            return getMapData( this ).then( mapData => {
-                this._mapData = mapData;
-                if ( mapData == null ) {
+            return getSourceMapInfo( this ).then( mapInfo => {
+                this._mapInfo = mapInfo;
+                if ( mapInfo == null ) {
                     return Promise.resolve();
                 }
                 this._resolveSources();
@@ -193,8 +193,8 @@ export class Node {
     private _loadSync (): void {
         this._content = getContentSync( this );
         if ( this._content != null ) {
-            this._mapData = getMapDataSync( this );
-            if ( this._mapData != null ) {
+            this._mapInfo = getSourceMapInfoSync( this );
+            if ( this._mapInfo != null ) {
                 this._resolveSources();
                 this._sources.forEach( node => node._loadSync() );
             }
@@ -202,7 +202,7 @@ export class Node {
     }
 
     private _resolveSources () {
-        const map = this._mapData.sourceMap;
+        const map = this._mapInfo.map;
 
         const hrDecodingStart = process.hrtime();
         this._mappings = decode( map.mappings );

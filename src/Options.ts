@@ -46,8 +46,8 @@ export function resolveOptions ( ...raw_options: Options[]): Options {
 }
 
 /** @internal */
-export function parseCommandLine ( command: minimist.ParsedArgs ): Options {
-    const options: Options = { 
+export function parseSorceryCommandLine ( command: minimist.ParsedArgs ): Options {
+    const options: Options = {
         inline: command.datauri,
         excludeContent: command.excludeContent,
         flatten: command.flatten,
@@ -58,7 +58,22 @@ export function parseCommandLine ( command: minimist.ParsedArgs ): Options {
 }
 
 /** @internal */
-export function normalizeOuputOptions ( destOrStreamOrOptions?: string | Writable | Options, write_options?: Options ): { options: Options, map_output?: string | Writable } {
+export function parseExorcistCommandLine ( command: minimist.ParsedArgs ): Options {
+    const options: Options = {
+        sourceMappingURLTemplate: command.url,
+        sourceRootBase: command.base,
+        sourcePathTemplate: command.base ? '[relative-path]' : '[absolute-path]',
+        // errorOnMissing
+    };
+    if ( command.root != null ) {
+        options.sourceRoot = command.root;
+    }
+
+    return options;
+}
+
+/** @internal */
+export function normalizeOutputOptions ( destOrStreamOrOptions?: string | Writable | Options, write_options?: Options ): { options: Options, map_output?: string | Writable } {
     let options: Options;
     let map_output: string | Writable;
     if ( typeof destOrStreamOrOptions === 'string' ) {

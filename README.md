@@ -31,7 +31,7 @@ npm install -g sourcery-map
 
 ### sourcery-map
 
-```
+```bash
   Usage:
     sourcery-map <input file> [options]
 
@@ -41,36 +41,33 @@ npm install -g sourcery-map
     -i, --input <file|folder>       Input file (option will override default provided value)
     -o, --output <file|folder>      Output file (if absent, will overwrite input)
     -d, --datauri                   Append map as a data URI, rather than separate file
-    -x, --excludeContent            Don't populate the sourcesContent array
-```
+    -x, --excludeContent            Do not populate the sourcesContent array
 
 Examples:
 
-```bash
-# overwrite sourcemap in place (will write map to
-# some/generated/code.min.js.map, and update
-# sourceMappingURL comment if necessary
-sourcery-map -i some/generated/code.min.js
+  # overwrite sourcemap in place (will write map to
+  # some/generated/code.min.js.map, and update
+  # sourceMappingURL comment if necessary
+  sourcery-map -i some/generated/code.min.js
 
-# append flattened sourcemap as an inline data URI
-# (will delete existing .map file, if applicable)
-sourcery-map -d -i some/generated/code.min.js
+  # append flattened sourcemap as an inline data URI
+  # (will delete existing .map file, if applicable)
+  sourcery-map -d -i some/generated/code.min.js
 
-# write to a new file (will create newfile.js and
-# newfile.js.map)
-sourcery-map -i some/generated/code.min.js -o newfile.js
+  # write to a new file (will create newfile.js and
+  # newfile.js.map)
+  sourcery-map -i some/generated/code.min.js -o newfile.js
 ```
 
 ### sourcery-exorcist
+```bash
+  Usage:
+    sourcery-exorcist <map file> [options]
 
   Externalizes the source map of the file streamed in.
 
   The source map is written as JSON to map_file, and the original file is streamed out with its
   sourceMappingURL set to the path of map_file (or to the value of the --url option).
-
-```
-  Usage:
-    sourcery-exorcist <map file> [options]
 
   Options:
     --base -b   Base path for calculating relative source paths.
@@ -92,7 +89,7 @@ Examples:
   Bundle main.js with browserify into bundle.js and externalize the map to bundle.js.map.
 
     browserify main.js --debug | sourcery-exorcist bundle.js.map > bundle.js
-
+```
 
 ## Options
 

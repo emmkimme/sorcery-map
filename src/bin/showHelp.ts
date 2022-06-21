@@ -1,14 +1,22 @@
-import * as path from 'path';
-
 import * as fse from 'fs-extra';
+import * as path from 'path';
 
 import type { Writable } from 'stream';
 
-export function injectVersion ( stream: Writable ) {
-    fse.readFile( path.join( __dirname, 'help.md' ), ( err, result ) => {
-        if ( err ) throw err;
-        const packageJSON = fse.readJSONSync( '../../package.json' );
-        const help = result.toString().replace( '<%= version %>', packageJSON.version );
-        ( stream || process.stderr ).write( '\n' + help + '\n' );
-    });
+const findParentDir = require('find-parent-dir');
+
+export function streamHelp ( stream: Writable, tool: string ) {
+    const stdout = ( stream || process.stderr );
+    const package_dirname = findParentDir.sync(__dirname, 'package.json');
+    const packageJSON = fse.readJSONSync( path.join(package_dirname, 'package.json') );
+    stdout.write(`\n${packageJSON.name} ${packageJSON.version}\n`);
+    
+    const readme = fse.readFileSync( path.join(package_dirname, 'README.md') ).toString();
+    const usageRegExp = new RegExp(`${tool}\\s*\`\`\`bash([\\s\\S]*)\`\`\``);
+    const usageRegExpArray = usageRegExp.exec(readme);
+    if (usageRegExpArray) {
+        // do not why my regexp do not stop at first ``` !!
+        const usage = usageRegExpArray[1].substr(0, usageRegExpArray[1].indexOf('```') - 1);
+        stdout.write( usage + '\n' );
+    }
 }

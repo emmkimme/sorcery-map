@@ -4,8 +4,6 @@
 export let SOURCEMAPPING_URL = 'sourceMa';
 SOURCEMAPPING_URL += 'ppingURL';
 
-// Matches only the last occurrence of sourceMappingURL
-
 const sourceMappingValueRegex = /\s*[@,#]\s*sourceMappingURL\s*=\s*([\S ]*)\s*/;
 
 /** @internal */
@@ -16,13 +14,13 @@ export const sourceMappingURLRegex = new RegExp(
 );
 
 /** @internal */
-export interface SourceMappingURLData {
-    sourceMappingURL?: string,
-    commentBlock?: boolean
+export interface SourceMappingURLInfo {
+    url: string,
+    commentBlock: boolean
 }
 
 /** @internal */
-export function getSourceMappingURLData ( str: string ): SourceMappingURLData | null {
+export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | null {
     if ( !str ) {
         return null;
     }
@@ -44,15 +42,15 @@ export function getSourceMappingURLData ( str: string ): SourceMappingURLData | 
     }
 
     return {
-        sourceMappingURL : decodeURI( sourceMappingURL ),
+        url : decodeURI( sourceMappingURL ),
         commentBlock: candidatsRegExp[0][1] === '*'
     };
 }
 
 /** @internal */
-export function generateSourceMappingURLComment ( sourceMappingURLData: SourceMappingURLData ) {
-    const sourceMappingURL = encodeURI( sourceMappingURLData.sourceMappingURL );
-    if ( sourceMappingURLData.commentBlock ) {
+export function generateSourceMappingURLComment ( sourceMappingURLInfo: SourceMappingURLInfo ) {
+    const sourceMappingURL = encodeURI( sourceMappingURLInfo.url );
+    if ( sourceMappingURLInfo.commentBlock ) {
         return `/*# ${SOURCEMAPPING_URL}=${sourceMappingURL} */`;
     }
     else {

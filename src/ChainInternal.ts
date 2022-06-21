@@ -9,7 +9,7 @@ import { slash } from './utils/path';
 
 import { SourceMap, SourceMapProps } from './SourceMap';
 import type { Stats } from './Stats';
-import { normalizeOuputOptions, Options } from './Options';
+import { normalizeOutputOptions, Options } from './Options';
 import { Node } from './Node';
 import { resolveOptions } from './Options';
 import type { Context } from './Context';
@@ -68,7 +68,7 @@ export class ChainInternal {
             const traced = this._node.sources[ segment[1] ].trace( // source
                 segment[2], // source code line
                 segment[3], // source code column
-                this._node.mapData.sourceMap.names[ segment[4] ],
+                this._node.mapInfo.map.names[ segment[4] ],
                 options
             );
 
@@ -122,7 +122,7 @@ export class ChainInternal {
         else {
             allMappings = this._node.mappings;
             allSources = this._node.sources;
-            allNames = this._node.mapData.sourceMap.names;
+            allNames = this._node.mapInfo.map.names;
         }
 
         // Encode mappings
@@ -131,7 +131,7 @@ export class ChainInternal {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        const map_file = path.basename( this._node.file || this._node.mapData.sourceMap.file );
+        const map_file = path.basename( this._node.file || this._node.mapInfo.map.file );
         const map = new SourceMap({
             version: 3,
             file: map_file,
@@ -144,7 +144,7 @@ export class ChainInternal {
             names: allNames,
             mappings
         });
-        const map_sourceRoot = [ options.sourceRoot, this._node.mapData.sourceMap.sourceRoot ].find( ( sourceRoot ) => sourceRoot != null );
+        const map_sourceRoot = [ options.sourceRoot, this._node.mapInfo.map.sourceRoot ].find( ( sourceRoot ) => sourceRoot != null );
         if ( map_sourceRoot != null ) {
             map.sourceRoot = map_sourceRoot;
         }
@@ -190,7 +190,7 @@ export class ChainInternal {
     }
     
     getContentAndMap ( destOrStreamOrOptions?: string | Writable | Options, write_raw_options?: Options ) {
-        const { options: write_options, map_output } = normalizeOuputOptions( destOrStreamOrOptions, write_raw_options );
+        const { options: write_options, map_output } = normalizeOutputOptions( destOrStreamOrOptions, write_raw_options );
 
         const options = resolveOptions( this._node.context.options, write_options );
 
@@ -207,7 +207,7 @@ export class ChainInternal {
             const sourceMappingURL = ( options.sourceMappingURLTemplate === 'inline' ) ?  map.toUrl() : computeSourceMappingURL( map_file, options );
             const map_stream = ( writable( map_output ) ) ? map_output : null;
 
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment({ sourceMappingURL, commentBlock: this._node.mapData.commentBlock }) );
+            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment({ url: sourceMappingURL, commentBlock: this._node.mapInfo.commentBlock }) );
             return { content_file, content, map_file, map_stream, map };
         }
         else {

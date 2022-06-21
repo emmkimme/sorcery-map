@@ -6,9 +6,9 @@ import * as minimist from 'minimist';
 import * as fse from 'fs-extra';
 import * as globby from 'globby';
 
-import { injectVersion } from './showHelp';
+import { streamHelp } from './showHelp';
 import * as sourcery_map from '..';
-import { parseCommandLine } from '../Options';
+import { parseSorceryCommandLine } from '../Options';
 
 const command = minimist( process.argv.slice( 2 ), {
     alias: {
@@ -25,11 +25,11 @@ const command = minimist( process.argv.slice( 2 ), {
 command.input = command.input || command._.shift();
 
 if ( command.help ) {
-    injectVersion( process.stdout );
+    streamHelp( process.stdout, 'so[u]?rcery-map' );
 }
 
 else if ( process.argv.length <= 2 && process.stdin.isTTY ) {
-    injectVersion( process.stderr );
+    streamHelp( process.stderr, 'so[u]?rcery-map' );
 }
 
 else if ( command.version ) {
@@ -42,7 +42,7 @@ else if ( !command.input ) {
 }
 
 else {
-    const options = parseCommandLine( command );
+    const options = parseSorceryCommandLine( command );
     fse.stat( command.input )
         .then( function ( stats ) {
             if ( stats.isDirectory() ) {

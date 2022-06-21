@@ -47,6 +47,7 @@
   ],
   "dependencies": {
     "buffer-crc32": "^0.2.5",
+    "find-parent-dir": "^0.3.1",
     "fs-extra": "^10.1.0",
     "globby": "~11.0.4",
     "is-stream": "^2.0.1",
