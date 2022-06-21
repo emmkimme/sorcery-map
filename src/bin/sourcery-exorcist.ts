@@ -35,14 +35,15 @@ else {
         console.error( 'Missing map file' );
     //   return usage();
     }
+    else {
+        const resolved_mapfile = path.resolve( mapfile );
 
-    const resolved_mapfile = path.resolve( mapfile );
+        const options = parseExorcistCommandLine( command );
 
-    const options = parseExorcistCommandLine( command );
-
-    process.stdin
-        .pipe( transform( resolved_mapfile, options ) )
-        .on( 'error', onerror )
-        .on( 'missing-map', console.error.bind( console ) )
-        .pipe( process.stdout );
+        process.stdin
+            .pipe( transform( resolved_mapfile, options ) )
+            .on( 'error', onerror )
+            .on( 'missing-map', console.error.bind( console ) )
+            .pipe( process.stdout );
+    }
 }

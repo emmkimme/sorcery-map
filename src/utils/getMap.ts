@@ -6,8 +6,8 @@ import { getSourceMappingURLInfo } from './sourceMappingURL';
 
 /** @internal */
 export interface SourceMapInfo {
-    map?: SourceMapProps,
-    commentBlock?: boolean
+    map: SourceMapProps,
+    commentBlock: boolean
 }
 
 /** @internal */
@@ -20,7 +20,7 @@ export function getSourceMapInfo ( node: Node ): Promise<SourceMapInfo | null> {
         if ( sourceMappingURLInfo ) {
             return getSourceMapFromUrl( sourceMappingURLInfo.url, node.origin )
                 .then( ( sourceMap ) => {
-                    return { sourceMap, commentBlock: sourceMappingURLInfo.commentBlock };
+                    return { map: sourceMap, commentBlock: sourceMappingURLInfo.commentBlock };
                 })
                 .catch( ( err ) => {
                 // throw new Error(`Error when reading map ${url}`);
