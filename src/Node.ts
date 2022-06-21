@@ -117,7 +117,7 @@ export class Node {
         if ( this.isOriginalSource ) {
             return true;
         }
-        return ( this._sources == null ) || this._sources.some( ( node ) => node._content == null );
+        return ( this._sources == null ) || !this._sources.some( ( node ) => node._content == null );
     }
 
     trace ( lineIndex: number, columnIndex: number, name?: string, options?: Options ): Trace {

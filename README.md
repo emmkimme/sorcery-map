@@ -206,12 +206,12 @@ Can replace [exorcist](https://www.npmjs.com/package/exorcist)
 ```
 by such code
 ```
-    .pipe(sourcery_map.transform({ output: bundleFile, flatten: false, sourceRootResolution: baseDir }))]
+    .pipe(sourcery_map.transform(bundleFile, { flatten: false, sourceRootResolution: baseDir }))]
 ```
 
 you can flatten the map at the same time
 ```
-    .pipe(sourcery_map.transform({ output: bundleFile, flatten: 'existing', sourceRootResolution: baseDir }))]
+    .pipe(sourcery_map.transform(bundleFile, { flatten: 'existing', sourceRootResolution: baseDir }))]
 ```
 
 ### Webpack >= 5.x [experimental]
