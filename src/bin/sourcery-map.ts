@@ -54,11 +54,9 @@ else {
                         return files.reduce( ( promise, file ) => {
                             return promise.then( function () {
                                 const input = path.join( command.input, file );
-                                const output = path.join( options.output, file );
-
-                                const local_options = Object.assign({}, options, { output });
-                                return sourcery_map.load( input, local_options ).then( ( chain ) => {
-                                    return chain.write( output, local_options );
+                                const output = path.join( command.output, file );
+                                return sourcery_map.load( input, options ).then( ( chain ) => {
+                                    return chain.write( output, options );
                                 });
                             });
                         }, Promise.resolve() );
@@ -66,7 +64,7 @@ else {
             }
             else {
                 return sourcery_map.load( command.input, options ).then( ( chain ) => {
-                    return chain.write( options.output, options );
+                    return chain.write( command.output, options );
                 });
             }
         })

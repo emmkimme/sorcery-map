@@ -14,7 +14,6 @@ interface InputOptions {
 }
 
 interface OutputOptions {
-    output: string;
     inline?: boolean;        // deprecated: sourceMappingURL === 'inline'
     absolutePath?: boolean;  // deprecated: sourceMappingURL === '[absolute-path]'
     sourceMappingURL?: 'inline' | '[absolute-path]' | '[base-path]';
@@ -43,10 +42,6 @@ export function resolveOptions ( ...raw_options: Options[]): Options {
     const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[base-path]';
     options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || sourceMappingURL;
 
-    if ( typeof options.output === 'string' ) {
-        options.output = options.output.replace( /\.map$/, '' );
-    }
-
     return options;
 }
 
@@ -54,32 +49,31 @@ export function resolveOptions ( ...raw_options: Options[]): Options {
 export function parseCommandLine ( command: minimist.ParsedArgs ): Options {
     const options: Options = { 
         inline: command.datauri,
-        output: command.output || command.input,
         excludeContent: command.excludeContent,
         flatten: command.flatten,
         sourceRoot: command.sourceRoot,
     };
+    command.output = command.output || command.input;
     return options;
 }
 
 /** @internal */
-export function normalizeOptions ( dest?: string | Writable | Options, write_options?: Options ): { options: Options, map_stream?: Writable } {
+export function normalizeOuputOptions ( destOrStreamOrOptions?: string | Writable | Options, write_options?: Options ): { options: Options, map_stream?: Writable } {
     let options: Options;
     let map_stream: Writable;
-    if ( typeof dest === 'string' ) {
+    if ( typeof destOrStreamOrOptions === 'string' ) {
         options = Object.assign({}, write_options );
-        options.output = dest;
     }
-    else if ( typeof dest === 'object' ) {
-        if ( writable( dest ) ) {
+    else if ( typeof destOrStreamOrOptions === 'object' ) {
+        if ( writable( destOrStreamOrOptions ) ) {
             options = Object.assign({}, write_options );
             if ( options.sourceMappingURLTemplate == null ) {
                 throw new Error( 'map file URL is required when using stream output' );
             }
-            map_stream = dest;
+            map_stream = destOrStreamOrOptions;
         }
         else {
-            options = dest as Options;
+            options = destOrStreamOrOptions as Options;
         }
     }
     else {

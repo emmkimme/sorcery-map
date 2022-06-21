@@ -8,7 +8,7 @@ import { slash } from './utils/path';
 
 import { SourceMap, SourceMapProps } from './SourceMap';
 import type { Stats } from './Stats';
-import { normalizeOptions, Options } from './Options';
+import { normalizeOuputOptions, Options } from './Options';
 import { Node } from './Node';
 import { resolveOptions } from './Options';
 import type { Context } from './Context';
@@ -188,14 +188,13 @@ export class ChainInternal {
         }
     }
     
-    getContentAndMap ( dest?: string | Writable | Options, write_raw_options?: Options ) {
-        const { options: write_options, map_stream } = normalizeOptions(dest, write_raw_options);
-        write_options.output = write_options.output || this._node.file;
+    getContentAndMap ( destOrStreamOrOptions?: string | Writable | Options, write_raw_options?: Options ) {
+        const { options: write_options, map_stream } = normalizeOuputOptions(destOrStreamOrOptions, write_raw_options);
 
         const options = resolveOptions( this._node.context.options, write_options );
 
-        const content_file = path.resolve( options.output );
-        options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : path.dirname( content_file );
+        const content_file = (typeof destOrStreamOrOptions === 'string') ? path.resolve( destOrStreamOrOptions ) : this._node.file;
+        options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : content_file ? path.dirname( content_file ) : path.resolve();
     
         const map = this.apply( options );
         if ( map ) {

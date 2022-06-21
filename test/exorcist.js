@@ -172,7 +172,7 @@ test('\nwhen piping a bundle generated with browserify and the write fails', fun
     }
   })
   fs.createReadStream(fixtures + '/bundle.js')
-    .pipe(ex.transform({ output: scriptMapfile }))
+    .pipe(ex.transform(scriptMapfile))
     .on('error', function (err) {
       t.equal(err, expectedErr)
       t.end();
