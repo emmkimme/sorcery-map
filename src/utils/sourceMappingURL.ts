@@ -14,7 +14,7 @@ export const sourceMappingURLRegex = new RegExp(sourceMappingURLEx);
 /** @internal */
 export interface SourceMappingURLInfo {
     url: string;
-    comment?: string;
+    replacement?: string;
 }
 
 function findSourceMappingURLExecArray(str: string ): RegExpExecArray | null {
@@ -52,7 +52,7 @@ export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | 
 
     return {
         url : decodeURI( sourceMappingURL ),
-        comment: match[0]
+        replacement: match[0]
     };
 }
 
@@ -60,12 +60,12 @@ export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | 
 export function replaceSourceMappingURLComment (content: string, sourceMappingURLInfo?: SourceMappingURLInfo ) {
     sourceMappingURLInfo = sourceMappingURLInfo || { url: '' };
     const newComment = generateSourceMappingURLComment(sourceMappingURLInfo);
-    if (sourceMappingURLInfo.comment) {
-        return content.replace(sourceMappingURLInfo.comment, newComment);
+    if (sourceMappingURLInfo.replacement) {
+        return content.replace(sourceMappingURLInfo.replacement, newComment);
     }
     const info = getSourceMappingURLInfo(content);
     if (info) {
-        return content.replace(info.comment, newComment);
+        return content.replace(info.replacement, newComment);
     }
     return content + '\n' + newComment;
 }
@@ -77,7 +77,7 @@ export function generateSourceMappingURLComment ( sourceMappingURLInfo: SourceMa
         return '';
     }
     const sourceMappingURL = encodeURI( sourceMappingURLInfo.url );
-    if ( sourceMappingURLInfo.comment == null || (sourceMappingURLInfo.comment[1] === '*') ) {
+    if ( sourceMappingURLInfo.replacement == null || (sourceMappingURLInfo.replacement[1] === '*') ) {
         return `/*# ${sourceMappingURLProp}=${sourceMappingURL} */`;
     }
     else {
