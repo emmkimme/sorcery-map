@@ -1,7 +1,7 @@
 {
   "name": "sourcery-map",
   "description": "Find your way through the chain of sourcemaps to the original source, like magic sourcery",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "author": "Emmanuel Kimmerlin",
   "repository": "https://github.com/emmkimme/sourcery-map",
   "license": "MIT",
@@ -83,10 +83,9 @@
     "webpack": "^5.73.0"
   },
   "scripts": {
-    "build": "del-cli -f lib && run-p build-ts:* && npm run build-copy-cjs",
+    "build": "del-cli -f lib && run-p build-ts:*",
     "build-ts:cjs": "tsc -p tsconfig.cjs.json",
     "build-ts:esm": "tsc -p tsconfig.esm.json",
-    "build-copy-cjs": "copyfiles -f src/bin/help.md ./lib/cjs/bin",
     "_pretest": "npm run build",
     "prepare-tests": "node test/samples/prepare-tests.js",
     "test": "run-p test:*",

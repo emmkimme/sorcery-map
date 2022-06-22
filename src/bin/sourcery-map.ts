@@ -5,9 +5,8 @@ import * as path from 'path';
 import * as minimist from 'minimist';
 import * as fse from 'fs-extra';
 import * as globby from 'globby';
-const findParentDir = require('find-parent-dir');
 
-import { streamHelp } from './showHelp';
+import { readPackageJSON, streamHelp } from './showHelp';
 import * as sourcery_map from '..';
 import { parseSorceryCommandLine } from '../Options';
 
@@ -26,19 +25,15 @@ const command = minimist( process.argv.slice( 2 ), {
 command.input = command.input || command._.shift();
 
 if ( command.help ) {
-    streamHelp( process.stdout, 'so[u]?rcery-map' );
+    streamHelp( process.stdout, `so[u]?rcery-map` );
 }
-
 else if ( process.argv.length <= 2 && process.stdin.isTTY ) {
-    streamHelp( process.stderr, 'so[u]?rcery-map' );
+    streamHelp( process.stderr, `so[u]?rcery-map` );
 }
-
 else if ( command.version ) {
-    const package_dirname = findParentDir.sync(__dirname, 'package.json');
-    const packageJSON = fse.readJSONSync( path.join(package_dirname, 'package.json') );
+    const packageJSON = readPackageJSON();
     console.log( packageJSON.version );
 }
-
 else if ( !command.input ) {
     console.error( 'Error: You must supply an --input (-i) argument. Type sourcery --help for more info' );
 }
