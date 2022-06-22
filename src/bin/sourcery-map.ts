@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as minimist from 'minimist';
 import * as fse from 'fs-extra';
 import * as globby from 'globby';
+const findParentDir = require('find-parent-dir');
 
 import { streamHelp } from './showHelp';
 import * as sourcery_map from '..';
@@ -33,8 +34,9 @@ else if ( process.argv.length <= 2 && process.stdin.isTTY ) {
 }
 
 else if ( command.version ) {
-    const packageJSON = fse.readJSONSync( '../package.json' );
-    console.log( 'Sorcery-map version ' + packageJSON.version );
+    const package_dirname = findParentDir.sync(__dirname, 'package.json');
+    const packageJSON = fse.readJSONSync( path.join(package_dirname, 'package.json') );
+    console.log( packageJSON.version );
 }
 
 else if ( !command.input ) {

@@ -230,7 +230,12 @@ function computeSourceMappingURL ( map_file: string, options: Options ) {
     let sourceMappingURL = options.sourceMappingURLTemplate;
     Object.keys( replacer ).forEach( ( key ) => {
         if ( sourceMappingURL.includes( key ) ) {
-            sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
+            try {
+                sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
+            }
+            catch (err) {
+                throw new Error( 'map file URL is required' );
+            }
         }
     });
     return sourceMappingURL;
