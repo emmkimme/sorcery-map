@@ -24,7 +24,7 @@ export class Node {
                     node._content = content;
                 }
                 if ( node._mapInfo === undefined && map ) {
-                    node._mapInfo = { map: map, commentBlock: true };
+                    node._mapInfo = { map };
                 }
             }
             else {
@@ -65,7 +65,7 @@ export class Node {
 
         this._file = file;
         this._content = content;
-        this._mapInfo = map ? { map: map, commentBlock: true } : undefined;
+        this._mapInfo = map ? { map } : undefined;
 
         if ( ( this._file == null ) && ( this._content == null ) ) {
             throw new Error( 'A source must specify either file or content' );

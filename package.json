@@ -88,7 +88,7 @@
     "build-ts:esm": "tsc -p tsconfig.esm.json",
     "_pretest": "npm run build",
     "prepare-tests": "node test/samples/prepare-tests.js",
-    "test": "run-p test:*",
+    "test": "run-s test:*",
     "test:mocha": "mocha test/test.js",
     "test:tap": "tap test/exorcist.js",
     "prepublish": "npm test",

@@ -5,7 +5,7 @@ import * as fse from 'fs-extra';
 import type { SourceMapProps } from '../SourceMap.js';
 
 import atob from './atob.js';
-import { SOURCEMAPPING_URL } from './sourceMappingURL';
+import { sourceMappingURLProp } from './sourceMappingURL';
 
 /**
  * Strip any JSON XSSI avoidance prefix from the string (as documented
@@ -22,7 +22,7 @@ function getRawMapFromBase64 ( url: string ): string | null {
     if ( /^data:/.test( url ) ) { // TODO beef this up
         const match = /base64,(.+)$/.exec( url );
         if ( !match ) {
-            throw new Error( `${SOURCEMAPPING_URL} is not base64-encoded` );
+            throw new Error( `${sourceMappingURLProp} is not base64-encoded` );
         }
         return atob( match[1]);
     }

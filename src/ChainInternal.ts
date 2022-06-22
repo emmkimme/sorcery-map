@@ -4,7 +4,7 @@ import * as fse from 'fs-extra';
 import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
 import { writable } from 'is-stream';
 
-import { generateSourceMappingURLComment, sourceMappingURLRegex } from './utils/sourceMappingURL';
+import { replaceSourceMappingURLComment } from './utils/sourceMappingURL';
 import { slash } from './utils/path';
 
 import { SourceMap, SourceMapProps } from './SourceMap';
@@ -206,11 +206,17 @@ export class ChainInternal {
             const sourceMappingURL = ( options.sourceMappingURLTemplate === 'inline' ) ?  map.toUrl() : computeSourceMappingURL( map_file, options );
             const map_stream = ( writable( map_output ) ) ? map_output : null;
 
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, generateSourceMappingURLComment({ url: sourceMappingURL, commentBlock: this._node.mapInfo.commentBlock }) );
+            const newSourceMappingURLInfo = { url: sourceMappingURL };
+            // inherit of current info for optimizing replacement
+            const info = this._node.mapInfo.info ? { ...this._node.mapInfo.info, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
+            const content = this._node.content && replaceSourceMappingURLComment(this._node.content, info );
             return { content_file, content, map_file, map_stream, map };
         }
         else {
-            const content = this._node.content && this._node.content.replace( sourceMappingURLRegex, '' );
+            const newSourceMappingURLInfo = { url: '' };
+            // inherit of current info for optimizing replacement
+            const info = this._node.mapInfo.info ? { ...this._node.mapInfo.info, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
+            const content = this._node.content && replaceSourceMappingURLComment(this._node.content, info);
             return { content_file, content };
         }
     }

@@ -2,12 +2,12 @@ import type { Node } from '../Node';
 import type { SourceMapProps } from '../SourceMap';
 
 import { getSourceMapFromUrl, getSourceMapFromUrlSync } from './getMapFromUrl.js';
-import { getSourceMappingURLInfo } from './sourceMappingURL';
+import { getSourceMappingURLInfo, SourceMappingURLInfo } from './sourceMappingURL';
 
 /** @internal */
 export interface SourceMapInfo {
-    map: SourceMapProps,
-    commentBlock: boolean
+    map: SourceMapProps;
+    info?: SourceMappingURLInfo;
 }
 
 /** @internal */
@@ -16,11 +16,11 @@ export function getSourceMapInfo ( node: Node ): Promise<SourceMapInfo | null> {
     // 'null' seen but empty
     const mapData = node.mapInfo;
     if ( mapData === undefined ) {
-        const sourceMappingURLInfo = getSourceMappingURLInfo( node.content );
-        if ( sourceMappingURLInfo ) {
-            return getSourceMapFromUrl( sourceMappingURLInfo.url, node.origin )
-                .then( ( sourceMap ) => {
-                    return { map: sourceMap, commentBlock: sourceMappingURLInfo.commentBlock };
+        const info = getSourceMappingURLInfo( node.content );
+        if ( info ) {
+            return getSourceMapFromUrl( info.url, node.origin )
+                .then( ( map ) => {
+                    return { map, info };
                 })
                 .catch( ( err ) => {
                 // throw new Error(`Error when reading map ${url}`);
@@ -38,11 +38,11 @@ export function getSourceMapInfoSync ( node: Node ): SourceMapInfo | null {
     // 'null' seen but empty
     const mapData = node.mapInfo;
     if ( mapData === undefined ) {
-        const sourceMappingURLInfo = getSourceMappingURLInfo( node.content );
-        if ( sourceMappingURLInfo ) {
+        const info = getSourceMappingURLInfo( node.content );
+        if ( info ) {
             try {
-                const sourceMap = getSourceMapFromUrlSync( sourceMappingURLInfo.url, node.origin );
-                return { map: sourceMap, commentBlock: sourceMappingURLInfo.commentBlock };
+                const map = getSourceMapFromUrlSync( info.url, node.origin );
+                return { map, info };
             }
             catch ( err ) {
                 // throw new Error(`Error when reading map ${url}`);
