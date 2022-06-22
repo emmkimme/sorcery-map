@@ -67,7 +67,10 @@ export function replaceSourceMappingURLComment (content: string, sourceMappingUR
     if (info) {
         return content.replace(info.replacement, newComment);
     }
-    return content + '\n' + newComment;
+    if (newComment) {
+        return content + '\n' + newComment;
+    }
+    return content;
 }
 
 
