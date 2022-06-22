@@ -170,7 +170,6 @@ export class ChainInternal {
                 else if ( map_file ) {
                     promises.push( fse.writeFile( map_file, map.toString() ) );
                 }
-    
                 return Promise.all( promises ).then( () => {});
             });
     }
