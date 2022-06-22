@@ -1,21 +1,25 @@
 # sourcery-map.js
 
-This package is a fork of [sorcery](https://github.com/Rich-Harris/sorcery) with few improvements added:
+This package is a JavaScript source map management toolset
+- fork of [sorcery](https://github.com/Rich-Harris/sorcery)
+- including [exorcist](https://www.npmjs.com/package/exorcist) like feature
+- implementing [webpack](https://webpack.js.org/) loader and plugin
 
+The purpose is to be consistent and have the same implemenation and the same options for managing these different features.
+ 
 **We merged pull requests**  
 * [Adjust delimiter used to detect the end of source map URLs in JS files](https://github.com/Rich-Harris/sorcery/pull/176)
 * [chore(deps-dev): bump eslint from 2.13.1 to 6.6.0](https://github.com/Rich-Harris/sorcery/pull/175)
 * [Handle file:// paths to source files](https://github.com/Rich-Harris/sorcery/pull/173)
 * [Ignore missing / unavailable files](https://github.com/Rich-Harris/sorcery/pull/165)
 * [Single character segment compatibility (needed for traceur)](https://github.com/Rich-Harris/sorcery/pull/14)
+* [chore(deps-dev): bump eslint from 2.13.1 to 6.6.0](https://github.com/Rich-Harris/sorcery/pull/175)
 
 **New features**
-* Flatten is optional and can manage existing files only (ease the debugging)
+* Flatten is optional and can be limited to existing physical files only (ease the debugging)
 * source path can be customized, relative or absolute.
 * Provide a source root resolution fallback when map has been generated from another path (browserify)
-* [exorcist](https://www.npmjs.com/package/exorcist) like [experimental]
 * sourceMappingURL can be inline content, absolute, relative...
-* webpack loader/plugin included
 
 **Beware**, all these features are experimental and not fully covered by tests, if you find an issue, do not hesitate to create a bug or contribute ;-)
 
@@ -27,73 +31,9 @@ First, install sourcery-map globally:
 npm install -g sourcery-map
 ```
 
-## Command line usage
-
-### sourcery-map
-
-```bash
-  Usage:
-    sourcery-map <input file> [options]
-
-  Options:
-    -h, --help                      Show help message
-    -v, --version                   Show version
-    -i, --input <file|folder>       Input file (option will override default provided value)
-    -o, --output <file|folder>      Output file (if absent, will overwrite input)
-    -d, --datauri                   Append map as a data URI, rather than separate file
-    -x, --excludeContent            Do not populate the sourcesContent array
-
-Examples:
-
-  # overwrite sourcemap in place (will write map to
-  # some/generated/code.min.js.map, and update
-  # sourceMappingURL comment if necessary
-  sourcery-map -i some/generated/code.min.js
-
-  # append flattened sourcemap as an inline data URI
-  # (will delete existing .map file, if applicable)
-  sourcery-map -d -i some/generated/code.min.js
-
-  # write to a new file (will create newfile.js and
-  # newfile.js.map)
-  sourcery-map -i some/generated/code.min.js -o newfile.js
-```
-
-### sourcery-exorcist
-```bash
-  Usage:
-    sourcery-exorcist <map file> [options]
-
-  Externalizes the source map of the file streamed in.
-
-  The source map is written as JSON to map_file, and the original file is streamed out with its
-  sourceMappingURL set to the path of map_file (or to the value of the --url option).
-
-  Options:
-    --base -b   Base path for calculating relative source paths.
-                (default: use absolute paths)
-
-    --root -r   Root URL for loading relative source paths.
-                Set as sourceRoot in the source map.
-                (default: '')
-
-    --url -u   Full URL to source map.
-              Set as sourceMappingURL in the output stream.
-              (default: map_file)
-
-    --error-on-missing -e   Abort with error if no map is found in the stream.
-                          (default: warn but still pipe through source)
-
-Examples:
-
-  Bundle main.js with browserify into bundle.js and externalize the map to bundle.js.map.
-
-    browserify main.js --debug | sourcery-exorcist bundle.js.map > bundle.js
-```
-
 ## Options
 
-### Parsing map (load, loadSync)
+### Reading map (load, loadSync)
 | API                  | Command line         | Value                                | Description |
 | -------------------- | -------------------- | ------------------------------------ | ----------- |
 | ---                  | -i, --input          | `<file>`<br/>`<folder>`              | Input file<br/>Input folder |
@@ -121,7 +61,41 @@ Examples:
 | -v, --version | Show version |
 
 
-## Usage as a node module
+## Sourcery-map
+
+### command line
+
+```bash
+  Usage:
+    sourcery-map <input file> [options]
+
+  Resolve a chain of sourcemaps back to the original source.
+
+  Options:
+    -h, --help                      Show help message
+    -v, --version                   Show version
+    -i, --input <file|folder>       Input file (option will override default provided value)
+    -o, --output <file|folder>      Output file (if absent, will overwrite input)
+    -d, --datauri                   Append map as a data URI, rather than separate file
+    -x, --excludeContent            Do not populate the sourcesContent array
+
+Examples:
+
+  # overwrite sourcemap in place (will write map to
+  # some/generated/code.min.js.map, and update
+  # sourceMappingURL comment if necessary
+  sourcery-map -i some/generated/code.min.js
+
+  # append flattened sourcemap as an inline data URI
+  # (will delete existing .map file, if applicable)
+  sourcery-map -d -i some/generated/code.min.js
+
+  # write to a new file (will create newfile.js and
+  # newfile.js.map)
+  sourcery-map -i some/generated/code.min.js -o newfile.js
+```
+
+### API
 
 ```js
 var sourcery_map = require( 'sourcery-map' );
@@ -187,8 +161,42 @@ sourcery_map.load( 'some/generated/code.min.js', {
 ```
 Any files not found will be read from the filesystem as normal.
 
-### Exorcist-like [experimental]
+## Sourcery-exorcist
 Can replace [exorcist](https://www.npmjs.com/package/exorcist)
+
+### command line
+```bash
+  Usage:
+    sourcery-exorcist <map file> [options]
+
+  Externalizes the source map of the file streamed in.
+
+  The source map is written as JSON to map_file, and the original file is streamed out with its
+  sourceMappingURL set to the path of map_file (or to the value of the --url option).
+
+  Options:
+    --base -b   Base path for calculating relative source paths.
+                (default: use absolute paths)
+
+    --root -r   Root URL for loading relative source paths.
+                Set as sourceRoot in the source map.
+                (default: '')
+
+    --url -u   Full URL to source map.
+              Set as sourceMappingURL in the output stream.
+              (default: map_file)
+
+    --error-on-missing -e   Abort with error if no map is found in the stream.
+                          (default: warn but still pipe through source)
+
+Examples:
+
+  Bundle main.js with browserify into bundle.js and externalize the map to bundle.js.map.
+
+    browserify main.js --debug | sourcery-exorcist bundle.js.map > bundle.js
+```
+
+### API
 ```
   const basedir = process.cwd();
   const browserify_options = { 
@@ -211,9 +219,9 @@ you can flatten the map at the same time
     .pipe(sourcery_map.transform(bundleFile, { flatten: 'existing', sourceRootResolution: baseDir }))]
 ```
 
-### Webpack >= 5.x [experimental]
+## Webpack >= 5.x
 
-#### Loader
+### Loader
 If you are happy with source maps generated by Webpack but would like to have them flattened, this is the good way to do this.  
 Can replace [source-map-loader](https://github.com/webpack-contrib/source-map-loader). On our side, this plugin is in trouble when reaching content not present on the machine.
 
@@ -236,7 +244,7 @@ module.exports = {
             ]
 ```
 
-#### Plugin
+### Plugin
 If the Webpack source maps are not properly generated, problem of paths, roots, ... this plugin could help to fix/normalize them.  
 
 Here, webpack will generated map files using absolute paths, our plugin will normalize paths and flattern them.

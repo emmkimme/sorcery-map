@@ -2,8 +2,7 @@
     "extends": "./tsconfig.common.json",
 
     "include": [
-        "./src/index.ts",
-        // "./src/webpack/*.ts"
+        "./src/index.ts"
     ],
 
     "compilerOptions": {
