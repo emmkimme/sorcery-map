@@ -14,6 +14,7 @@ export function loader ( input: string, inputMap: string ) {
     const map: SourceMapProps = inputMap ? JSON.parse( inputMap ): undefined;
 
     const context = new Context( webpack_loader_context.context, loader_options );
+    context.options.sourceMappingURLTemplate = 'none';
     ChainInternal.Load( context, undefined, input, map )
         .then( ( chain ) => {
             if ( chain ) {

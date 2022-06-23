@@ -17,7 +17,7 @@ interface OutputOptions {
     inline?: boolean;        // deprecated: sourceMappingURL === 'inline'
     absolutePath?: boolean;  // deprecated: sourceMappingURL === '[absolute-path]'
     sourceMappingURL?: 'inline' | '[absolute-path]' | '[base-path]';
-    sourceMappingURLTemplate?: 'inline' | '[absolute-path]' | '[base-path]' | string;
+    sourceMappingURLTemplate?: 'inline' | 'none' | '[absolute-path]' | '[base-path]' | string;
     sourcePathTemplate?: '[absolute-path]' | '[relative-path]' | string;
     sourceRootBase?: string;
     sourceRoot?: string;

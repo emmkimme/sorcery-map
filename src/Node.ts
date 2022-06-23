@@ -3,14 +3,14 @@ import * as path from 'path';
 import { decode, SourceMapMappings } from 'sourcemap-codec';
 import * as fse from 'fs-extra';
 
-import { getSourceMapInfo, getSourceMapInfoSync, SourceMapInfo } from './utils/getMap';
-import { getContent, getContentSync } from './utils/getContent';
 import { manageFileProtocol } from './utils/path';
 
 import type { Trace } from './Trace';
 import type { Options } from './Options';
 import type { Context } from './Context';
 import type { SourceMapProps } from './SourceMap';
+import { getSourceMappingURLInfo, SourceMappingURLInfo } from './utils/sourceMappingURL';
+import { getSourceMapFromUrl, getSourceMapFromUrlSync } from './utils/getMapFromUrl';
 
 /** @internal */
 export class Node {
@@ -23,8 +23,8 @@ export class Node {
                 if ( node._content === undefined && content ) {
                     node._content = content;
                 }
-                if ( node._mapInfo === undefined && map ) {
-                    node._mapInfo = { map };
+                if ( node._map === undefined && map ) {
+                    node._map = map;
                 }
             }
             else {
@@ -55,7 +55,8 @@ export class Node {
     private readonly _context: Context;
     private readonly _file?: string | null;
     private _content?: string | null;
-    private _mapInfo?: SourceMapInfo | null;
+    private _mapInfo?: SourceMappingURLInfo | null;
+    private _map?: SourceMapProps | null;
     private _mappings: SourceMapMappings;
     private _sources: Node[];
     private _decodingTime: number;
@@ -65,7 +66,7 @@ export class Node {
 
         this._file = file;
         this._content = content;
-        this._mapInfo = map ? { map } : undefined;
+        this._map = map;
 
         if ( ( this._file == null ) && ( this._content == null ) ) {
             throw new Error( 'A source must specify either file or content' );
@@ -97,6 +98,10 @@ export class Node {
         return this._file;
     }
 
+    get map () {
+        return this._map;
+    }
+
     get mapInfo () {
         return this._mapInfo;
     }
@@ -110,7 +115,7 @@ export class Node {
     }
 
     get isOriginalSource () {
-        return ( this._mapInfo == null );
+        return ( this._mapInfo == null && this._map == null );
     }
 
     get isCompleteSourceContent () {
@@ -123,7 +128,7 @@ export class Node {
     trace ( lineIndex: number, columnIndex: number, name?: string, options?: Options ): Trace {
         // If this node doesn't have a source map, we have
         // to assume it is the original source
-        if ( this.isOriginalSource || ( options && options.flatten === 'existing' && !this.isCompleteSourceContent ) ) {
+        if ( !this.map || ( options && options.flatten === 'existing' && !this.isCompleteSourceContent ) ) {
             return {
                 source: this._file,
                 line: lineIndex + 1,
@@ -158,7 +163,7 @@ export class Node {
                     const nameIndex = segments[i][4] || 0;
 
                     const parent = this._sources[sourceFileIndex];
-                    return parent.trace( sourceCodeLine, sourceCodeColumn, this._mapInfo.map.names[nameIndex] || name, options );
+                    return parent.trace( sourceCodeLine, sourceCodeColumn, this.map.names[nameIndex] || name, options );
                 }
             }
         }
@@ -169,40 +174,40 @@ export class Node {
         const nameIndex = segments[0][4] || 0;
 
         const parent = this._sources[sourceFileIndex];
-        return parent.trace( sourceCodeLine, null, this._mapInfo.map.names[nameIndex] || name, options );
+        return parent.trace( sourceCodeLine, null, this.map.names[nameIndex] || name, options );
     }
 
     private _load (): Promise<void> {
-        return getContent( this ).then( content => {
-            this._content = content;
-            if ( content == null ) {
+        return this.updateContent().then( () => {
+            if ( this._content == null ) {
                 return Promise.resolve();
             }
-            return getSourceMapInfo( this ).then( mapInfo => {
-                this._mapInfo = mapInfo;
-                if ( mapInfo == null ) {
+            return this.updateSourceMap().then( () => {
+                if ( this._map == null ) {
                     return Promise.resolve();
                 }
                 this._resolveSources();
                 return Promise.all( this._sources.map( node => node._load() ) )
-                    .then( () => {});
+                    .then( () => { });
             });
         });
     }
 
     private _loadSync (): void {
-        this._content = getContentSync( this );
-        if ( this._content != null ) {
-            this._mapInfo = getSourceMapInfoSync( this );
-            if ( this._mapInfo != null ) {
-                this._resolveSources();
-                this._sources.forEach( node => node._loadSync() );
-            }
+        this.updateContentSync();
+        if ( this._content == null ) {
+            return;
         }
+        this.updateSourceMapSync();
+        if ( this._map == null ) {
+            return;
+        }
+        this._resolveSources();
+        this._sources.forEach( node => node._loadSync() );
     }
 
     private _resolveSources () {
-        const map = this._mapInfo.map;
+        const map = this._map;
 
         const hrDecodingStart = process.hrtime();
         this._mappings = decode( map.mappings );
@@ -228,4 +233,69 @@ export class Node {
             return Node.Create( this._context, source, content );
         });
     }
+
+    updateContent (): Promise<void> {
+        // 'undefined' never seen
+        // 'null' seen but empty
+        if ( this._content === undefined ) {
+            return fse.readFile( this._file, { encoding: 'utf-8' })
+                .then( ( content ) => {
+                    this._content = content;
+                })
+                .catch( () => {
+                    this._content = null;
+                });
+        }
+        return Promise.resolve();
+    }
+
+    updateContentSync (): void {
+        // 'undefined' never seen
+        // 'null' seen but empty
+        if ( this._content === undefined ) {
+            try {
+                this._content = fse.readFileSync( this._file, { encoding: 'utf-8' });
+            }
+            catch ( e ) {
+                this._content = null;
+            }
+        }
+    }
+
+    updateSourceMap (): Promise<void> {
+        // 'undefined' never seen
+        // 'null' seen but empty
+        if ( this._mapInfo === undefined ) {
+            this._mapInfo = getSourceMappingURLInfo( this._content );
+            if ( this._mapInfo ) {
+                return getSourceMapFromUrl( this._mapInfo.url, this.origin )
+                    .then( ( map ) => {
+                        this._map = map;
+                    })
+                    .catch( ( err ) => {
+                        // throw new Error(`Error when reading map ${url}`);
+                        this._map = null;
+                    });
+            }
+        }
+        return Promise.resolve();
+    }
+
+    updateSourceMapSync (): void {
+        // 'undefined' never seen
+        // 'null' seen but empty
+        if ( this._mapInfo === undefined ) {
+            this._mapInfo = getSourceMappingURLInfo( this._content );
+            if ( this._mapInfo ) {
+                try {
+                    this._map = getSourceMapFromUrlSync( this._mapInfo.url, this.origin );
+                }
+                catch ( err ) {
+                    this._map = null;
+                    // throw new Error(`Error when reading map ${url}`);
+                }
+            }
+        }
+    }
+
 }
