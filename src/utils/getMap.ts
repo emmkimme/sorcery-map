@@ -14,8 +14,8 @@ export interface SourceMapInfo {
 export function getSourceMapInfo ( node: Node ): Promise<SourceMapInfo | null> {
     // 'undefined' never seen
     // 'null' seen but empty
-    const mapData = node.mapInfo;
-    if ( mapData === undefined ) {
+    const mapInfo = node.mapInfo;
+    if ( mapInfo === undefined ) {
         const info = getSourceMappingURLInfo( node.content );
         if ( info ) {
             return getSourceMapFromUrl( info.url, node.origin )
@@ -29,15 +29,15 @@ export function getSourceMapInfo ( node: Node ): Promise<SourceMapInfo | null> {
         }
         return Promise.resolve( null );
     }
-    return Promise.resolve( mapData );
+    return Promise.resolve( mapInfo );
 }
 
 /** @internal */
 export function getSourceMapInfoSync ( node: Node ): SourceMapInfo | null {
     // 'undefined' never seen
     // 'null' seen but empty
-    const mapData = node.mapInfo;
-    if ( mapData === undefined ) {
+    const mapInfo = node.mapInfo;
+    if ( mapInfo === undefined ) {
         const info = getSourceMappingURLInfo( node.content );
         if ( info ) {
             try {
@@ -50,5 +50,5 @@ export function getSourceMapInfoSync ( node: Node ): SourceMapInfo | null {
         }
         return null;
     }
-    return mapData;
+    return mapInfo;
 }

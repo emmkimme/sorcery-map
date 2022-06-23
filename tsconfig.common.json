@@ -40,6 +40,7 @@
 
         /* Experimental Options */
         "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
 
         /* Treat a symlinked file like a real one. */
         "preserveSymlinks": true,

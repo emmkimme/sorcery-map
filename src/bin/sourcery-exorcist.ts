@@ -17,16 +17,17 @@ const command = minimist( process.argv.slice( 2 ), {
     }
 });
 
-function onerror(err: any) {
-  console.error(err.toString());
-  process.exit(err.errno || 1);
+/* eslint-disable-next-line */
+function onerror ( err: any ) {
+    console.error( err.toString() );
+    process.exit( err.errno || 1 );
 }
 
 if ( command.help ) {
-    streamHelp( process.stdout, `so[u]?rcery-exorcist` );
+    streamHelp( process.stdout, 'so[u]?rcery-exorcist' );
 }
 else if ( process.argv.length <= 2 && process.stdin.isTTY ) {
-    streamHelp( process.stderr, `so[u]?rcery-exorcist` );
+    streamHelp( process.stderr, 'so[u]?rcery-exorcist' );
 }
 else if ( command.version ) {
     const packageJSON = readPackageJSON();

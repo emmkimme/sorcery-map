@@ -25,10 +25,10 @@ const command = minimist( process.argv.slice( 2 ), {
 command.input = command.input || command._.shift();
 
 if ( command.help ) {
-    streamHelp( process.stdout, `so[u]?rcery-map` );
+    streamHelp( process.stdout, 'so[u]?rcery-map' );
 }
 else if ( process.argv.length <= 2 && process.stdin.isTTY ) {
-    streamHelp( process.stderr, `so[u]?rcery-map` );
+    streamHelp( process.stderr, 'so[u]?rcery-map' );
 }
 else if ( command.version ) {
     const packageJSON = readPackageJSON();

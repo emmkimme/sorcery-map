@@ -2,7 +2,6 @@ import type { LoaderContext } from 'webpack';
 
 import { Context } from '../Context';
 import type { SourceMapProps } from '../SourceMap';
-import { sourceMappingURLRegex } from '../utils/sourceMappingURL';
 import { ChainInternal } from '../ChainInternal';
 
 export function loader ( input: string, inputMap: string ) {
@@ -18,9 +17,9 @@ export function loader ( input: string, inputMap: string ) {
     ChainInternal.Load( context, undefined, input, map )
         .then( ( chain ) => {
             if ( chain ) {
-                const map = chain.apply( loader_options );
+                const { content, map } = chain.getContentAndMap( );
                 if ( map ) {
-                    input = input.replace( sourceMappingURLRegex, '' );
+                    input = content;
                     inputMap = map.toString();
                 }
             }

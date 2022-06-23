@@ -29,7 +29,6 @@ export function transform ( dest?: string | Writable | Options, transform_raw_op
                         map_stream.end( map.toString(), 'utf-8' );
                     }
                     else if ( map_file ) {
-                        // fse.ensureDirSync( path.dirname( resolved ) );
                         fse.writeFileSync( map_file, map.toString() );
                     }
                     done( undefined, content );

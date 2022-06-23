@@ -37,17 +37,6 @@ function getRawMapFromFile ( url: string, base: string ): Promise<string | null>
 }
 
 /** @internal */
-export function getSourceMapFromUrl ( url: string, base: string ): Promise<SourceMapProps | null> {
-    const raw_map = getRawMapFromBase64( url );
-    const promise = raw_map ? Promise.resolve( raw_map ) : getRawMapFromFile( url, base );
-    return promise
-        .then( ( raw_map ) => {
-            return raw_map ? parseJSON( raw_map ): null;
-        })
-        .catch ( ( err ) => null );
-}
-
-/** @internal */
 function getRawMapFromFileSync ( url: string, base: string ): string | null {
     url = path.resolve( base, url );
     try {
@@ -56,6 +45,16 @@ function getRawMapFromFileSync ( url: string, base: string ): string | null {
     catch ( err ) {
         return null;
     }
+}
+/** @internal */
+export function getSourceMapFromUrl ( url: string, base: string ): Promise<SourceMapProps | null> {
+    const raw_map = getRawMapFromBase64( url );
+    const promise = raw_map ? Promise.resolve( raw_map ) : getRawMapFromFile( url, base );
+    return promise
+        .then( ( raw_map ) => {
+            return raw_map ? parseJSON( raw_map ): null;
+        })
+        .catch ( ( err ) => null );
 }
 
 /** @internal */

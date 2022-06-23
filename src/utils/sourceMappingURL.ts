@@ -9,15 +9,15 @@ const sourceMappingURLEx =
     '(?:\\/\\/' + sourceMappingValueRegex.source + '\\s*)';
 
 /** @internal */
-export const sourceMappingURLRegex = new RegExp(sourceMappingURLEx);
+export const sourceMappingURLRegex = new RegExp( sourceMappingURLEx );
 
 /** @internal */
 export interface SourceMappingURLInfo {
     url: string;
-    replacement?: string;
+    comment?: string;
 }
 
-function findSourceMappingURLExecArray(str: string ): RegExpExecArray | null {
+function findSourceMappingURLExecArray ( str: string ): RegExpExecArray | null {
     if ( !str ) {
         return null;
     }
@@ -25,8 +25,8 @@ function findSourceMappingURLExecArray(str: string ): RegExpExecArray | null {
     // Find the *last* sourceMappingURL skipping intermediate noises (comments, strings, ..)
     let currentMatch: RegExpExecArray;
     let lastMatch: RegExpExecArray;
-    const sourceMappingURLRegex = new RegExp(sourceMappingURLEx , 'gm');
-    while (currentMatch = sourceMappingURLRegex.exec( str )) {
+    const sourceMappingURLRegex = new RegExp( sourceMappingURLEx , 'gm' );
+    while ( currentMatch = sourceMappingURLRegex.exec( str ) ) {
         lastMatch = currentMatch;
     }
     return lastMatch;
@@ -34,14 +34,14 @@ function findSourceMappingURLExecArray(str: string ): RegExpExecArray | null {
 
 /** @internal */
 export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | null {
-    const match = findSourceMappingURLExecArray(str);
-    if (!match) {
+    const match = findSourceMappingURLExecArray( str );
+    if ( !match ) {
         return null;
     }
 
-    // First index contains the full sourceMappingURL comment
-    // Second index contains the sourceMappingURL value if it is a CSS content, commentBlock is true (could be null)
-    // third index contains the sourceMappingURL value if it is a JS content, commentBlock is false (could be null)
+    // [0] index the full sourceMappingURL comment
+    // [1] index the sourceMappingURL value if it is a CSS content (could be null)
+    // [2] index the sourceMappingURL value if it is a JS content (could be null)
    
     // Clean up ahead and retain the non-empty value CSS or JS
     const candidats = match.map( candidat => candidat && candidat.replace( /\r?\n|\r/g, '' ).trim() ).filter( candidat => candidat && candidat.length );
@@ -52,22 +52,22 @@ export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | 
 
     return {
         url : decodeURI( sourceMappingURL ),
-        replacement: match[0]
+        comment: match[0]
     };
 }
 
 /** @internal */
-export function replaceSourceMappingURLComment (content: string, sourceMappingURLInfo?: SourceMappingURLInfo ) {
+export function replaceSourceMappingURLComment ( content: string, sourceMappingURLInfo?: SourceMappingURLInfo ) {
     sourceMappingURLInfo = sourceMappingURLInfo || { url: '' };
-    const newComment = generateSourceMappingURLComment(sourceMappingURLInfo);
-    if (sourceMappingURLInfo.replacement) {
-        return content.replace(sourceMappingURLInfo.replacement, newComment);
+    const newComment = generateSourceMappingURLComment( sourceMappingURLInfo );
+    if ( sourceMappingURLInfo.comment ) {
+        return content.replace( sourceMappingURLInfo.comment, newComment );
     }
-    const info = getSourceMappingURLInfo(content);
-    if (info) {
-        return content.replace(info.replacement, newComment);
+    const info = getSourceMappingURLInfo( content );
+    if ( info ) {
+        return content.replace( info.comment, newComment );
     }
-    if (newComment) {
+    if ( newComment ) {
         return content + '\n' + newComment;
     }
     return content;
@@ -76,11 +76,11 @@ export function replaceSourceMappingURLComment (content: string, sourceMappingUR
 
 /** @internal */
 export function generateSourceMappingURLComment ( sourceMappingURLInfo: SourceMappingURLInfo ) {
-    if (!sourceMappingURLInfo.url) {
+    if ( !sourceMappingURLInfo.url ) {
         return '';
     }
     const sourceMappingURL = encodeURI( sourceMappingURLInfo.url );
-    if ( sourceMappingURLInfo.replacement == null || (sourceMappingURLInfo.replacement[1] === '*') ) {
+    if ( sourceMappingURLInfo.comment == null || ( sourceMappingURLInfo.comment[1] === '*' ) ) {
         return `/*# ${sourceMappingURLProp}=${sourceMappingURL} */`;
     }
     else {

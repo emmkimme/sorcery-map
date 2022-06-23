@@ -209,14 +209,14 @@ export class ChainInternal {
             const newSourceMappingURLInfo = { url: sourceMappingURL };
             // inherit of current info for optimizing replacement
             const info = this._node.mapInfo.info ? { ...this._node.mapInfo.info, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
-            const content = this._node.content && replaceSourceMappingURLComment(this._node.content, info );
+            const content = this._node.content && replaceSourceMappingURLComment( this._node.content, info );
             return { content_file, content, map_file, map_stream, map };
         }
         else {
             const newSourceMappingURLInfo = { url: '' };
             // inherit of current info for optimizing replacement
             const info = this._node.mapInfo.info ? { ...this._node.mapInfo.info, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
-            const content = this._node.content && replaceSourceMappingURLComment(this._node.content, info);
+            const content = this._node.content && replaceSourceMappingURLComment( this._node.content, info );
             return { content_file, content };
         }
     }
@@ -239,7 +239,7 @@ function computeSourceMappingURL ( map_file: string, options: Options ) {
             try {
                 sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
             }
-            catch (err) {
+            catch ( err ) {
                 throw new Error( 'map file URL is required' );
             }
         }
