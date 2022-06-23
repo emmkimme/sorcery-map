@@ -160,15 +160,13 @@ export class ChainInternal {
         const { content_file, content, map_file, map_stream, map } = this.getContentAndMap( dest, write_options );
         const promises = [];
         if ( content ) {
-            fse.ensureDirSync( path.dirname( content_file ) );
-            promises.push( fse.writeFile( content_file, content ) );
+            promises.push( fse.ensureDir( path.dirname( content_file ) ).then( () => fse.writeFile( content_file, content ) ) );
         }
         if ( map_stream ) {
             map_stream.end( map.toString(), 'utf-8' );
         }
         else if ( map_file ) {
-            fse.ensureDirSync( path.dirname( map_file ) );
-            promises.push( fse.writeFile( map_file, map.toString() ) );
+            promises.push( fse.ensureDir( path.dirname( map_file ) ).then( () => fse.writeFile( map_file, map.toString() ) ) );
         }
         return Promise.all( promises ).then( () => {});
     }
