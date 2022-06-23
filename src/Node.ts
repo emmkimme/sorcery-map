@@ -238,12 +238,12 @@ export class Node {
         // 'undefined' never seen
         // 'null' seen but empty
         if ( this._content === undefined ) {
+            this._content = null;
             return fse.readFile( this._file, { encoding: 'utf-8' })
                 .then( ( content ) => {
                     this._content = content;
                 })
                 .catch( () => {
-                    this._content = null;
                 });
         }
         return Promise.resolve();
@@ -253,11 +253,11 @@ export class Node {
         // 'undefined' never seen
         // 'null' seen but empty
         if ( this._content === undefined ) {
+            this._content = null;
             try {
                 this._content = fse.readFileSync( this._file, { encoding: 'utf-8' });
             }
             catch ( e ) {
-                this._content = null;
             }
         }
     }
@@ -265,7 +265,8 @@ export class Node {
     updateSourceMap (): Promise<void> {
         // 'undefined' never seen
         // 'null' seen but empty
-        if ( this._mapInfo === undefined ) {
+        if ( this._map === undefined ) {
+            this._map = null;
             this._mapInfo = getSourceMappingURLInfo( this._content );
             if ( this._mapInfo ) {
                 return getSourceMapFromUrl( this._mapInfo.url, this.origin )
@@ -274,7 +275,6 @@ export class Node {
                     })
                     .catch( ( err ) => {
                         // throw new Error(`Error when reading map ${url}`);
-                        this._map = null;
                     });
             }
         }
@@ -284,14 +284,14 @@ export class Node {
     updateSourceMapSync (): void {
         // 'undefined' never seen
         // 'null' seen but empty
-        if ( this._mapInfo === undefined ) {
+        if ( this._map === undefined ) {
+            this._map = null;
             this._mapInfo = getSourceMappingURLInfo( this._content );
             if ( this._mapInfo ) {
                 try {
                     this._map = getSourceMapFromUrlSync( this._mapInfo.url, this.origin );
                 }
                 catch ( err ) {
-                    this._map = null;
                     // throw new Error(`Error when reading map ${url}`);
                 }
             }
