@@ -178,11 +178,11 @@ export class Node {
     }
 
     private _load (): Promise<void> {
-        return this.updateContent().then( () => {
+        return this._updateContent().then( () => {
             if ( this._content == null ) {
                 return Promise.resolve();
             }
-            return this.updateSourceMap().then( () => {
+            return this._updateMap().then( () => {
                 if ( this._map == null ) {
                     return Promise.resolve();
                 }
@@ -194,11 +194,11 @@ export class Node {
     }
 
     private _loadSync (): void {
-        this.updateContentSync();
+        this._updateContentSync();
         if ( this._content == null ) {
             return;
         }
-        this.updateSourceMapSync();
+        this._updateMapSync();
         if ( this._map == null ) {
             return;
         }
@@ -234,7 +234,7 @@ export class Node {
         });
     }
 
-    updateContent (): Promise<void> {
+    private _updateContent (): Promise<void> {
         // 'undefined' never seen
         // 'null' seen but empty
         if ( this._content === undefined ) {
@@ -249,7 +249,7 @@ export class Node {
         return Promise.resolve();
     }
 
-    updateContentSync (): void {
+    private _updateContentSync (): void {
         // 'undefined' never seen
         // 'null' seen but empty
         if ( this._content === undefined ) {
@@ -258,11 +258,12 @@ export class Node {
                 this._content = fse.readFileSync( this._file, { encoding: 'utf-8' });
             }
             catch ( e ) {
+                //
             }
         }
     }
 
-    updateSourceMap (): Promise<void> {
+    private _updateMap (): Promise<void> {
         // 'undefined' never seen
         // 'null' seen but empty
         if ( this._map === undefined ) {
@@ -281,7 +282,7 @@ export class Node {
         return Promise.resolve();
     }
 
-    updateSourceMapSync (): void {
+    private _updateMapSync (): void {
         // 'undefined' never seen
         // 'null' seen but empty
         if ( this._map === undefined ) {
