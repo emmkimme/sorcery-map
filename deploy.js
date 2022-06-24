@@ -6,13 +6,18 @@ const fileREADME = fse.readFileSync('README.md').toString();
 const filePACKAGEJSON = fse.readFileSync('package.json');
 
 try {
-    let newFileREADME = fileREADME.replace(/sourcery/g, 'sorcery');
+    const newFileREADME = fileREADME.replace(/sourcery/gi, (match) => match.replace('u', ''));
     fse.writeFileSync('README.md', newFileREADME);
 
     const contentPACKAGEJSON = JSON.parse(filePACKAGEJSON.toString());
-    contentPACKAGEJSON.name = contentPACKAGEJSON.name.replace(/sourcery/g, 'sorcery');
-    contentPACKAGEJSON.bin['sorcery-map'] = contentPACKAGEJSON.bin['sourcery-map'];
-    delete contentPACKAGEJSON.bin['sourcery-map'];
+    contentPACKAGEJSON.name = contentPACKAGEJSON.name.replace(/sourcery/gi, (match) => match.replace('u', ''));
+    Object.keys(contentPACKAGEJSON.bin).forEach((key) => {
+        const new_key = key.replace(/sourcery/gi, (match) => match.replace('u', ''));
+        if (new_key !== key) {
+            contentPACKAGEJSON.bin[new_key] = contentPACKAGEJSON.bin[key];
+            delete contentPACKAGEJSON.bin[key];
+        }
+    });
     fse.writeJSONSync('package.json', contentPACKAGEJSON);
 
     child_process.execSync('npm run deploy');
