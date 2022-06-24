@@ -1,8 +1,8 @@
 import * as path from 'path';
 
 import type { Compiler, LoaderOptionsPlugin } from 'webpack';
-import { ChainInternal } from '../ChainInternal';
 
+import { ChainInternal } from '../ChainInternal';
 import { Context } from '../Context';
 import type { Options } from '../Options';
 import { Serial } from '../utils/promise';
