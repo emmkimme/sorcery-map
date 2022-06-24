@@ -249,10 +249,10 @@ function computeSourceMappingURL ( map: SourceMap, map_file: string, options: Op
     return sourceMappingURL;
 }
 
-function computeSourcePath ( node: Node, content_file: string, options: Options ) {
+function computeSourcePath ( node: Node, source_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
-        '[absolute-path]': () => content_file,
-        '[relative-path]': () => path.relative( options.sourceRootBase || ( node.file ? path.dirname( node.file ) : '' ), content_file )
+        '[absolute-path]': () => source_file,
+        '[relative-path]': () => path.relative( options.sourceRootBase || node.origin, source_file )
     };
     let sourcePath = options.sourcePathTemplate;
     Object.keys( replacer ).forEach( ( key ) => {

@@ -223,7 +223,7 @@ export class Node {
 
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];
-            if ( source && sourceRoots ) {
+            if ( source && sourceRoots.length ) {
                 const fileResolved = sourceRoots
                     .map( ( sourceRoot ) => {
                         return path.resolve( sourceRoot, source );
@@ -236,7 +236,7 @@ export class Node {
 
     private _updateContent (): Promise<void> {
         // 'undefined' never seen
-        // 'null' seen but empty
+        // 'null' seen but not found
         if ( this._content === undefined ) {
             this._content = null;
             return fse.readFile( this._file, { encoding: 'utf-8' })
@@ -251,7 +251,7 @@ export class Node {
 
     private _updateContentSync (): void {
         // 'undefined' never seen
-        // 'null' seen but empty
+        // 'null' seen but not found
         if ( this._content === undefined ) {
             this._content = null;
             try {
@@ -265,7 +265,7 @@ export class Node {
 
     private _updateMap (): Promise<void> {
         // 'undefined' never seen
-        // 'null' seen but empty
+        // 'null' seen but not found
         if ( this._map === undefined ) {
             this._map = null;
             this._mapInfo = getSourceMappingURLInfo( this._content );
@@ -284,7 +284,7 @@ export class Node {
 
     private _updateMapSync (): void {
         // 'undefined' never seen
-        // 'null' seen but empty
+        // 'null' seen but not found
         if ( this._map === undefined ) {
             this._map = null;
             this._mapInfo = getSourceMappingURLInfo( this._content );
