@@ -29,14 +29,12 @@ function getRawMapFromBase64 ( url: string ): string | null {
     return null;
 }
 
-/** @internal */
 function getRawMapFromFile ( url: string, base: string ): Promise<string | null> {
     url = path.resolve( base, url );
     return fse.readFile( url, { encoding: 'utf-8' })
         .catch( () => null );
 }
 
-/** @internal */
 function getRawMapFromFileSync ( url: string, base: string ): string | null {
     url = path.resolve( base, url );
     try {
@@ -46,6 +44,7 @@ function getRawMapFromFileSync ( url: string, base: string ): string | null {
         return null;
     }
 }
+
 /** @internal */
 export function getSourceMapFromUrl ( url: string, base: string ): Promise<SourceMapProps | null> {
     const raw_map = getRawMapFromBase64( url );

@@ -75,7 +75,6 @@ export function replaceSourceMappingURLComment ( content: string, sourceMappingU
     return content;
 }
 
-
 /** @internal */
 export function generateSourceMappingURLComment ( sourceMappingURLInfo: SourceMappingURLInfo ) {
     if ( !sourceMappingURLInfo.url ) {
