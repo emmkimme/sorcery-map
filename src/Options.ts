@@ -16,9 +16,10 @@ interface InputOptions {
 interface OutputOptions {
     inline?: boolean;        // deprecated: sourceMappingURL === 'inline'
     absolutePath?: boolean;  // deprecated: sourceMappingURL === '[absolute-path]'
-    sourceMappingURL?: 'inline' | '[absolute-path]' | '[base-path]';
-    sourceMappingURLTemplate?: 'inline' | 'none' | '[absolute-path]' | '[base-path]' | string;
-    sourcePathTemplate?: '[absolute-path]' | '[relative-path]' | string;
+    sourceMappingURL?: 'inline' | '[absolute-path]';
+    sourceMappingURLTemplate?: 'inline' | 'none' | '[absolute-path]' | '[relative-path]' | '[resource-path]' | string;
+    sourceMappingURLBase?: string;
+    sourcePathTemplate?: '[absolute-path]' | '[relative-path]' | '[resource-path]' | string;
     sourceRootBase?: string;
     sourceRoot?: string;
     excludeContent?: boolean;
@@ -39,7 +40,7 @@ export function resolveOptions ( ...raw_options: Options[]): Options {
 
     const inline = ( options.inline === true );
     const absolutePath = ( options.absolutePath === true );
-    const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[base-path]';
+    const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[relative-path]';
     options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || sourceMappingURL;
 
     return options;

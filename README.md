@@ -49,8 +49,8 @@ npm install -g sourcery-map
 | absolutePath             | ---                  | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=[absolute-path]` |
 | excludeContent           | -x, --excludeContent | flag        | Don't populate the sourcesContent array |
 | sourceMappingURL         | --sourceMappingURL   |             | *deprecated* see `sourceMappingURLTemplate` ||
-| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[base-path]` (default)<br/>`inline`<br/>`none`<br/>`[absolute-path]`<br>`<string>`| TBD</br>Append map as a data URI rather than separate file</br>Remove map reference<br/>TBD<br/>TBD|
-| sourcePathTemplate       | --sourcePathTemplate | `[relative-path]` (default)<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location <br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[relative-path]``` |
+| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[relative-path]` (default)<br/>`inline`<br/>`none`<br/>`[resource-path]`<br/>`[absolute-path]`<br>`<string>`| TBD</br>Append map as a data URI rather than separate file</br>Remove map reference<br/>TBD<br/>TBD<br/>TBD|
+| sourcePathTemplate       | --sourcePathTemplate | `[relative-path]` (default)<br/>`[resource-path]`<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location<br/>relative-path without root (C: or /)<br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[resource-path]``` |
 | sourceRootBase           | --base               | `<folder>`  | allows the base to be specified as something other than the destination file |
 | flatten                  | -f, --flatten        | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map as long as the file (content) exists<br/>do not flatten the map |
 
