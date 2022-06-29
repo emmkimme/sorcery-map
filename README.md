@@ -56,9 +56,9 @@ npm install -g sourcery-map
 ### deprecated
 | API                      | Command line         | Value       | Description |
 | ------------------------ | -------------------- | ----------- | ----------- |
-| inline                   | -d, --datauri        | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=inline` |
-| absolutePath             | ---                  | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=[absolute-path]` |
-| sourceMappingURL         | --sourceMappingURL   |             | *deprecated* see `sourceMappingURLTemplate` ||
+| inline                   | -d, --datauri        | flag        | equivalent to `sourceMappingURLTemplate=inline` |
+| absolutePath             | ---                  | flag        | equivalent to `sourceMappingURLTemplate=[absolute-path]` |
+| sourceMappingURL         | --sourceMappingURL   |             | see `sourceMappingURLTemplate` |
 
 ### misc
 | Command line  | Description |
