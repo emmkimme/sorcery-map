@@ -3,7 +3,7 @@ import * as path from 'path';
 // import type { InputFileSystem, OutputFileSystem } from 'webpack';
 
 import { Node } from './Node';
-import { Options, resolveOptions } from './Options';
+import { Options, mergeOptions } from './Options';
 
 /** @internal */
 export interface NodeCacheByFile {
@@ -23,7 +23,7 @@ export class Context {
         this._nodeCacheByFile = {};
         this._sourceRoots = [];
 
-        const options = resolveOptions( context_options );
+        const options = mergeOptions( context_options );
 
         if ( options.sourceRootResolution ) {
             this._sourceRoots.push( path.resolve( options.sourceRootResolution ) );

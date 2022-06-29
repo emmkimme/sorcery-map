@@ -3,11 +3,11 @@ import { Transform, Writable } from 'stream';
 
 import * as fse from 'fs-extra';
 
-import { normalizeOutputOptions, Options } from '../Options';
 import { Context } from '../Context';
 import { ChainInternal } from '../ChainInternal';
+import { Options, parseTransformOptions } from '../Options';
 
-export function transform ( dest?: string | Writable | Options, transform_raw_options?: Options ) {
+export function transform ( destOrStreamOrOptions?: string | Writable | Options, transform_raw_options?: Options ) {
     let source = '';
 
     const liner = new Transform();
@@ -18,13 +18,13 @@ export function transform ( dest?: string | Writable | Options, transform_raw_op
     };
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
-        const { options: transform_options } = normalizeOutputOptions( dest, transform_raw_options );
-        const context = new Context( path.resolve(), transform_options );
+        const { options, output: map_output } = parseTransformOptions(destOrStreamOrOptions, transform_raw_options);
+        const context = new Context( path.resolve(), options );
         ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {
                 if ( chain ) {
                     // inline file not found ! to manage
-                    const { content, map_file, map_stream, map } = chain.getContentAndMap( dest );
+                    const { content, map_file, map_stream, map } = chain.getContentAndMap( null, map_output, options );
                     if ( map_stream ) {
                         map_stream.end( map.toString(), 'utf-8' );
                     }

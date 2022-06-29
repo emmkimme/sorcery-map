@@ -1,7 +1,6 @@
-import type { Writable } from 'stream';
-
-import type * as minimist from 'minimist';
 import { writable } from 'is-stream';
+import type * as minimist from 'minimist';
+import type { Writable } from 'stream';
 
 import type { SourceMapProps } from './SourceMap';
 
@@ -30,7 +29,7 @@ export interface Options extends InputOptions, OutputOptions {
 }
 
 /** @internal */
-export function resolveOptions ( ...raw_options: Options[]): Options {
+export function mergeOptions ( ...raw_options: Options[]): Options {
     const options = Object.assign({}, ...raw_options );
 
     options.flatten = options.flatten || 'full';
@@ -74,25 +73,35 @@ export function parseExorcistCommandLine ( command: minimist.ParsedArgs ): Optio
 }
 
 /** @internal */
-export function normalizeOutputOptions ( destOrStreamOrOptions?: string | Writable | Options, write_options?: Options ): { options: Options, map_output?: string | Writable } {
+export function parseWriteOptions ( destOrOptions?: string | Options, write_options?: Options ): { output?: string, options: Options } {
     let options: Options;
-    let map_output: string | Writable;
-    if ( typeof destOrStreamOrOptions === 'string' ) {
+    let output: string;
+    if ( typeof destOrOptions === 'string' ) {
         options = Object.assign({}, write_options );
-        map_output = destOrStreamOrOptions.replace( /\.map$/, '' );
+        output = destOrOptions;
     }
-    else if ( typeof destOrStreamOrOptions === 'object' ) {
-        if ( writable( destOrStreamOrOptions ) ) {
-            options = Object.assign({}, write_options );
+    if ( typeof destOrOptions === 'object' ) {
+        options = Object.assign({}, destOrOptions );
+    }
+    return { options, output };
+}
 
-            map_output = destOrStreamOrOptions;
+export function parseTransformOptions ( destOrStreamOrOptions?: string | Writable | Options, transform_options?: Options ): { output?: string | Writable, options: Options } {
+    let options: Options;
+    let output: string | Writable;
+    if ( typeof destOrStreamOrOptions === 'string' ) {
+        options = Object.assign({}, transform_options );
+        output = destOrStreamOrOptions;
+    }
+    if ( typeof destOrStreamOrOptions === 'object' ) {
+        if ( writable( destOrStreamOrOptions ) ) {
+            options = Object.assign({}, transform_options );
+            output = destOrStreamOrOptions;
         }
         else {
-            options = Object.assign({}, destOrStreamOrOptions );
+            options = Object.assign({}, options );
         }
     }
-    else {
-        options = Object.assign({}, write_options );
-    }
-    return { options, map_output };
+    return { options, output };
 }
+

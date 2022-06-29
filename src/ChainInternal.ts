@@ -9,14 +9,15 @@ import { slash } from './utils/path';
 
 import { SourceMap, SourceMapProps } from './SourceMap';
 import type { Stats } from './Stats';
-import { normalizeOutputOptions, Options } from './Options';
+import { parseWriteOptions, Options } from './Options';
 import { Node } from './Node';
-import { resolveOptions } from './Options';
+import { mergeOptions } from './Options';
 import type { Context } from './Context';
 import type { Writable } from 'stream';
+import type { Chain } from './Chain';
 
 /** @internal */
-export class ChainInternal {
+export class ChainInternal implements Chain {
     static Load ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Promise<ChainInternal | null> {
         return Node.Load( context, file, content, map )
             .then( ( node ) => node.isOriginalSource ? null : new ChainInternal( node ) );
@@ -52,7 +53,11 @@ export class ChainInternal {
     }
 
     apply ( apply_options: Options ): SourceMap | null {
-        const options = resolveOptions( this._node.context.options, apply_options );
+        return this._generateMap(this._node.file, apply_options);
+    }
+
+    private _generateMap ( dest: string, apply_options: Options ): SourceMap | null {
+        const options = mergeOptions( this._node.context.options, apply_options );
 
         if ( !this._node.map || ( options && options.flatten === 'existing' && !this._node.isCompleteSourceContent ) ) {
             return null;
@@ -131,12 +136,13 @@ export class ChainInternal {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        const map_file = path.basename( this._node.file || this._node.map.file );
+        const map_file = path.basename(dest || this._node.map.file );
+        const content_dir = dest ? path.dirname(dest) : this._node.context.origin;
         const map = new SourceMap({
             version: 3,
             file: map_file,
             sources: allSources.map( ( sourceNode ) => {
-                return computeSourcePath( this._node, sourceNode.file, options );
+                return computeSourcePath( content_dir, sourceNode.file, options );
             }),
             sourcesContent: allSources.map( ( sourceNode ) => {
                 return options.excludeContent ? null : sourceNode.content;
@@ -152,12 +158,16 @@ export class ChainInternal {
     }
 
     trace ( oneBasedLineIndex: number, zeroBasedColumnIndex: number, trace_options: Options ) {
-        const options = resolveOptions( this._node.context.options, trace_options );
+        const options = mergeOptions( this._node.context.options, trace_options );
         return this._node.trace( oneBasedLineIndex - 1, zeroBasedColumnIndex, null, options );
     }
 
-    write ( dest?: string | Writable | Options, write_options?: Options ) {
-        const { content_file, content, map_file, map_stream, map } = this.getContentAndMap( dest, write_options );
+    write ( write_raw_options?: Options ): Promise<void>;
+    write ( dest: string, write_raw_options?: Options ): Promise<void>;
+    write ( destOrOptions: string | Options, write_raw_options?: Options ): Promise<void> {
+        const { options: write_options, output } = parseWriteOptions( destOrOptions, write_raw_options );
+        const content_file = output ? path.resolve(output) : this._node.file;
+        const { content, map_file, map_stream, map } = this.getContentAndMap( content_file, null, write_options );
         const promises = [];
         if ( content ) {
             promises.push( fse.ensureDir( path.dirname( content_file ) ).then( () => fse.writeFile( content_file, content ) ) );
@@ -171,8 +181,12 @@ export class ChainInternal {
         return Promise.all( promises ).then( () => {});
     }
 
-    writeSync ( dest: string | Writable | Options, write_options?: Options ) {
-        const { content_file, content, map_file, map_stream, map } = this.getContentAndMap( dest, write_options );
+    writeSync ( write_raw_options?: Options ): void;
+    writeSync ( dest: string, write_raw_options?: Options ): void;
+    writeSync ( destOrOptions: string | Options, write_raw_options?: Options ): void {
+        const { options: write_options, output } = parseWriteOptions( destOrOptions, write_raw_options );
+        const content_file = output ? path.resolve(output) : this._node.file;
+        const { content, map_file, map_stream, map } = this.getContentAndMap( content_file, null, write_options );
         if ( content ) {
             fse.ensureDirSync( path.dirname( content_file ) );
             fse.writeFileSync( content_file, content );
@@ -186,19 +200,18 @@ export class ChainInternal {
         }
     }
     
-    getContentAndMap ( destOrStreamOrOptions?: string | Writable | Options, write_raw_options?: Options ) {
-        const { options: write_options, map_output } = normalizeOutputOptions( destOrStreamOrOptions, write_raw_options );
+    getContentAndMap ( content_file?: string, map_output?: string | Writable, write_options?: Options ) {
+        const options = mergeOptions( this._node.context.options, write_options );
 
-        const options = resolveOptions( this._node.context.options, write_options );
+        const candidat_map_file = (typeof map_output === 'string') ? path.resolve(map_output): content_file ? content_file + '.map' : null;
+        const candidat_map_stream = writable(map_output) ? map_output: null;
 
-        const content_file = ( typeof map_output === 'string' ) ? path.resolve( map_output ) : this._node.file;
-        options.sourceRootBase = options.sourceRootBase ? path.resolve( options.sourceRootBase ) : content_file ? path.dirname( content_file ) : path.resolve();
-    
-        const map = this.apply( options );
+        const map = this._generateMap( content_file, options );
         if ( map ) {
-            const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null : content_file ? content_file + '.map' : null;
-            const map_stream = ( writable( map_output ) ) ? map_output : null;
-            const sourceMappingURL = computeSourceMappingURL( content_file, map, map_file, options );
+            const map_file = ( options.sourceMappingURLTemplate === 'inline') ? null : candidat_map_file;
+            const map_stream = ( options.sourceMappingURLTemplate === 'inline') ? null : candidat_map_stream;
+            const content_dir = content_file ? path.dirname(content_file) : map_file ? path.dirname(map_file) : this._node.context.origin;
+            const sourceMappingURL = computeSourceMappingURL( content_dir, map, map_file, options );
 
             const newSourceMappingURLInfo = { url: sourceMappingURL };
             // inherit of current info for optimizing replacement
@@ -222,7 +235,7 @@ function tally ( nodes: Node[]) {
     }, 0 );
 }
 
-function computeSourceMappingURL ( content_file: string, map: SourceMap, map_file: string, options: Options ) {
+function computeSourceMappingURL ( content_dir: string, map: SourceMap, map_file: string, options: Options ) {
     let sourceMappingURL = options.sourceMappingURLTemplate;
     if ( sourceMappingURL === 'inline' ) {
         sourceMappingURL = map.toUrl();
@@ -233,11 +246,11 @@ function computeSourceMappingURL ( content_file: string, map: SourceMap, map_fil
     else {
         const replacer: Record<string, () => string> = {
             '[absolute-path]': () => map_file,
-            '[relative-path]': () => path.relative( options.sourceMappingURLBase || path.dirname(content_file), map_file ),
+            '[relative-path]': () => path.relative( options.sourceMappingURLBase || content_dir, map_file ),
             '[resource-path]': () => {
-                const result = path.relative( options.sourceMappingURLBase || path.dirname(content_file), map_file );
+                const result = path.relative( options.sourceMappingURLBase || content_dir, map_file );
                 const resultParts = path.parse(result);
-                return resultParts.dir.substring(resultParts.root.length);
+                return result.substring(resultParts.root.length);
             }
         };
         Object.keys( replacer ).forEach( ( key ) => {
@@ -254,14 +267,14 @@ function computeSourceMappingURL ( content_file: string, map: SourceMap, map_fil
     return sourceMappingURL;
 }
 
-function computeSourcePath ( node: Node, content_file: string, options: Options ) {
+function computeSourcePath ( content_dir: string, source_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
-        '[absolute-path]': () => content_file,
-        '[relative-path]': () => path.relative( options.sourceRootBase || node.origin, content_file ),
+        '[absolute-path]': () => source_file,
+        '[relative-path]': () => path.relative( options.sourceRootBase ||content_dir, source_file ),
         '[resource-path]': () => {
-            const result = path.relative( options.sourceRootBase || node.origin, content_file );
+            const result = path.relative( options.sourceRootBase || content_dir, source_file );
             const resultParts = path.parse(result);
-            return resultParts.dir.substring(resultParts.root.length);
+            return result.substring(resultParts.root.length);
         }
     };
     let sourcePath = options.sourcePathTemplate;
