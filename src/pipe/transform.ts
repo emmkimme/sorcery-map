@@ -18,7 +18,7 @@ export function transform ( mapFileOrStreamOrOptions?: string | Writable | Optio
     };
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
-        const { options, output: map_output } = parseTransformOptions(mapFileOrStreamOrOptions, transform_raw_options);
+        const { options, output: map_output } = parseTransformOptions( mapFileOrStreamOrOptions, transform_raw_options );
         const context = new Context( path.resolve(), options );
         ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {
