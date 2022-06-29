@@ -73,30 +73,30 @@ export function parseExorcistCommandLine ( command: minimist.ParsedArgs ): Optio
 }
 
 /** @internal */
-export function parseWriteOptions ( destOrOptions?: string | Options, write_options?: Options ): { output?: string, options: Options } {
+export function parseWriteOptions ( contentFileOrOptions?: string | Options, write_options?: Options ): { output?: string, options: Options } {
     let options: Options;
     let output: string;
-    if ( typeof destOrOptions === 'string' ) {
+    if ( typeof contentFileOrOptions === 'string' ) {
         options = Object.assign({}, write_options );
-        output = destOrOptions;
+        output = contentFileOrOptions;
     }
-    if ( typeof destOrOptions === 'object' ) {
-        options = Object.assign({}, destOrOptions );
+    if ( typeof contentFileOrOptions === 'object' ) {
+        options = Object.assign({}, contentFileOrOptions );
     }
     return { options, output };
 }
 
-export function parseTransformOptions ( destOrStreamOrOptions?: string | Writable | Options, transform_options?: Options ): { output?: string | Writable, options: Options } {
+export function parseTransformOptions ( mapFileOrStreamOrOptions?: string | Writable | Options, transform_options?: Options ): { output?: string | Writable, options: Options } {
     let options: Options;
     let output: string | Writable;
-    if ( typeof destOrStreamOrOptions === 'string' ) {
+    if ( typeof mapFileOrStreamOrOptions === 'string' ) {
         options = Object.assign({}, transform_options );
-        output = destOrStreamOrOptions;
+        output = mapFileOrStreamOrOptions;
     }
-    if ( typeof destOrStreamOrOptions === 'object' ) {
-        if ( writable( destOrStreamOrOptions ) ) {
+    if ( typeof mapFileOrStreamOrOptions === 'object' ) {
+        if ( writable( mapFileOrStreamOrOptions ) ) {
             options = Object.assign({}, transform_options );
-            output = destOrStreamOrOptions;
+            output = mapFileOrStreamOrOptions;
         }
         else {
             options = Object.assign({}, options );

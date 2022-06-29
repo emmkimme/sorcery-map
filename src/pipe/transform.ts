@@ -7,7 +7,7 @@ import { Context } from '../Context';
 import { ChainInternal } from '../ChainInternal';
 import { Options, parseTransformOptions } from '../Options';
 
-export function transform ( destOrStreamOrOptions?: string | Writable | Options, transform_raw_options?: Options ) {
+export function transform ( mapFileOrStreamOrOptions?: string | Writable | Options, transform_raw_options?: Options ) {
     let source = '';
 
     const liner = new Transform();
@@ -18,7 +18,7 @@ export function transform ( destOrStreamOrOptions?: string | Writable | Options,
     };
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
-        const { options, output: map_output } = parseTransformOptions(destOrStreamOrOptions, transform_raw_options);
+        const { options, output: map_output } = parseTransformOptions(mapFileOrStreamOrOptions, transform_raw_options);
         const context = new Context( path.resolve(), options );
         ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {
