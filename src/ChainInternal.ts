@@ -138,12 +138,12 @@ export class ChainInternal implements Chain {
 
         const map_file = path.basename(content_file || this._node.map.file );
         // source locations are usually compute from the content file origin
-        const sourceRootDir = content_file ? path.dirname(content_file) : this._node.context.origin;
+        const sourceRootDefault = content_file ? path.dirname(content_file) : this._node.context.origin;
         const map = new SourceMap({
             version: 3,
             file: map_file,
             sources: allSources.map( ( sourceNode ) => {
-                return computeSourcePath( sourceRootDir, sourceNode.file, options );
+                return computeSourcePath( sourceRootDefault, sourceNode.file, options );
             }),
             sourcesContent: allSources.map( ( sourceNode ) => {
                 return options.excludeContent ? null : sourceNode.content;
@@ -212,8 +212,8 @@ export class ChainInternal implements Chain {
         if ( map ) {
             const map_file = ( options.sourceMappingURLTemplate === 'inline') ? null : candidat_map_file;
             const map_stream = ( options.sourceMappingURLTemplate === 'inline') ? null : candidat_map_stream;
-            const sourceMappingURLRootDir = content_file ? path.dirname(content_file) : map_file ? path.dirname(map_file) : this._node.context.origin;
-            const sourceMappingURL = computeSourceMappingURL( sourceMappingURLRootDir, map, map_file, options );
+            const sourceMappingURLDefault = content_file ? path.dirname(content_file) : map_file ? path.dirname(map_file) : this._node.context.origin;
+            const sourceMappingURL = computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options );
 
             const newSourceMappingURLInfo = { url: sourceMappingURL };
             // inherit of current info for optimizing replacement
@@ -237,7 +237,7 @@ function tally ( nodes: Node[]) {
     }, 0 );
 }
 
-function computeSourceMappingURL ( sourceMappingURLRootDir: string, map: SourceMap, map_file: string, options: Options ) {
+function computeSourceMappingURL ( sourceMappingURLDefault: string, map: SourceMap, map_file: string, options: Options ) {
     let sourceMappingURL = options.sourceMappingURLTemplate;
     if ( sourceMappingURL === 'inline' ) {
         sourceMappingURL = map.toUrl();
@@ -248,9 +248,9 @@ function computeSourceMappingURL ( sourceMappingURLRootDir: string, map: SourceM
     else {
         const replacer: Record<string, () => string> = {
             '[absolute-path]': () => map_file,
-            '[relative-path]': () => path.relative( options.sourceMappingURLBase || sourceMappingURLRootDir, map_file ),
+            '[relative-path]': () => path.relative( options.sourceMappingURLBase || sourceMappingURLDefault, map_file ),
             '[resource-path]': () => {
-                const result = path.relative( options.sourceMappingURLBase || sourceMappingURLRootDir, map_file );
+                const result = path.relative( options.sourceMappingURLBase || sourceMappingURLDefault, map_file );
                 const resultParts = path.parse(result);
                 return result.substring(resultParts.root.length);
             }
@@ -269,12 +269,12 @@ function computeSourceMappingURL ( sourceMappingURLRootDir: string, map: SourceM
     return sourceMappingURL;
 }
 
-function computeSourcePath ( sourceRootDir: string, source_file: string, options: Options ) {
+function computeSourcePath ( sourceRootDefault: string, source_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
         '[absolute-path]': () => source_file,
-        '[relative-path]': () => path.relative( options.sourceRootBase || sourceRootDir, source_file ),
+        '[relative-path]': () => path.relative( options.sourceRootBase || sourceRootDefault, source_file ),
         '[resource-path]': () => {
-            const result = path.relative( options.sourceRootBase || sourceRootDir, source_file );
+            const result = path.relative( options.sourceRootBase || sourceRootDefault, source_file );
             const resultParts = path.parse(result);
             return result.substring(resultParts.root.length);
         }
