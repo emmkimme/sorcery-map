@@ -56,7 +56,7 @@ export class ChainInternal implements Chain {
         return this._generateMap(this._node.file, apply_options);
     }
 
-    private _generateMap ( dest: string, apply_options: Options ): SourceMap | null {
+    private _generateMap ( content_file: string, apply_options: Options ): SourceMap | null {
         const options = mergeOptions( this._node.context.options, apply_options );
 
         if ( !this._node.map || ( options && options.flatten === 'existing' && !this._node.isCompleteSourceContent ) ) {
@@ -136,13 +136,14 @@ export class ChainInternal implements Chain {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        const map_file = path.basename(dest || this._node.map.file );
-        const content_dir = dest ? path.dirname(dest) : this._node.context.origin;
+        const map_file = path.basename(content_file || this._node.map.file );
+        // source locations are usually compute from the content file origin
+        const sourceRootDir = content_file ? path.dirname(content_file) : this._node.context.origin;
         const map = new SourceMap({
             version: 3,
             file: map_file,
             sources: allSources.map( ( sourceNode ) => {
-                return computeSourcePath( content_dir, sourceNode.file, options );
+                return computeSourcePath( sourceRootDir, sourceNode.file, options );
             }),
             sourcesContent: allSources.map( ( sourceNode ) => {
                 return options.excludeContent ? null : sourceNode.content;
@@ -211,8 +212,8 @@ export class ChainInternal implements Chain {
         if ( map ) {
             const map_file = ( options.sourceMappingURLTemplate === 'inline') ? null : candidat_map_file;
             const map_stream = ( options.sourceMappingURLTemplate === 'inline') ? null : candidat_map_stream;
-            const content_dir = content_file ? path.dirname(content_file) : map_file ? path.dirname(map_file) : this._node.context.origin;
-            const sourceMappingURL = computeSourceMappingURL( content_dir, map, map_file, options );
+            const sourceMappingURLRootDir = content_file ? path.dirname(content_file) : map_file ? path.dirname(map_file) : this._node.context.origin;
+            const sourceMappingURL = computeSourceMappingURL( sourceMappingURLRootDir, map, map_file, options );
 
             const newSourceMappingURLInfo = { url: sourceMappingURL };
             // inherit of current info for optimizing replacement
@@ -236,7 +237,7 @@ function tally ( nodes: Node[]) {
     }, 0 );
 }
 
-function computeSourceMappingURL ( content_dir: string, map: SourceMap, map_file: string, options: Options ) {
+function computeSourceMappingURL ( sourceMappingURLRootDir: string, map: SourceMap, map_file: string, options: Options ) {
     let sourceMappingURL = options.sourceMappingURLTemplate;
     if ( sourceMappingURL === 'inline' ) {
         sourceMappingURL = map.toUrl();
@@ -247,9 +248,9 @@ function computeSourceMappingURL ( content_dir: string, map: SourceMap, map_file
     else {
         const replacer: Record<string, () => string> = {
             '[absolute-path]': () => map_file,
-            '[relative-path]': () => path.relative( options.sourceMappingURLBase || content_dir, map_file ),
+            '[relative-path]': () => path.relative( options.sourceMappingURLBase || sourceMappingURLRootDir, map_file ),
             '[resource-path]': () => {
-                const result = path.relative( options.sourceMappingURLBase || content_dir, map_file );
+                const result = path.relative( options.sourceMappingURLBase || sourceMappingURLRootDir, map_file );
                 const resultParts = path.parse(result);
                 return result.substring(resultParts.root.length);
             }
@@ -268,12 +269,12 @@ function computeSourceMappingURL ( content_dir: string, map: SourceMap, map_file
     return sourceMappingURL;
 }
 
-function computeSourcePath ( content_dir: string, source_file: string, options: Options ) {
+function computeSourcePath ( sourceRootDir: string, source_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
         '[absolute-path]': () => source_file,
-        '[relative-path]': () => path.relative( options.sourceRootBase ||content_dir, source_file ),
+        '[relative-path]': () => path.relative( options.sourceRootBase || sourceRootDir, source_file ),
         '[resource-path]': () => {
-            const result = path.relative( options.sourceRootBase || content_dir, source_file );
+            const result = path.relative( options.sourceRootBase || sourceRootDir, source_file );
             const resultParts = path.parse(result);
             return result.substring(resultParts.root.length);
         }
