@@ -34,25 +34,31 @@ npm install -g sourcery-map
 ## Options
 
 ### Reading map (load, loadSync)
-| API                  | Command line         | Value                                | Description |
-| -------------------- | -------------------- | ------------------------------------ | ----------- |
-| ---                  | -i, --input          | `<file>`<br/>`<folder>`              | Input file<br/>Input folder |
-| content              | ---                  | a map of `filename: contents` pairs. | `filename` will be resolved against the current working directory if needs be |
-| sourcemaps           | ---                  | a map of `filename: sourcemap` pairs | where `filename` is the name of the file the sourcemap is related to. This will override any `sourceMappingURL` comments in the file itself |
-| sourceRootResolution | ---                  | <folder>                             | base path of the relative sources path in the map |
+| API                  | Command line           | Value                                | Description |
+| -------------------- | ---------------------- | ------------------------------------ | ----------- |
+| ---                  | -i, --input            | `<file>`<br/>`<folder>`              | Input file<br/>Input folder |
+| content              | ---                    | a map of `filename: contents` pairs. | `filename` will be resolved against the current working directory if needs be |
+| sourcemaps           | ---                    | a map of `filename: sourcemap` pairs | where `filename` is the name of the file the sourcemap is related to. This will override any `sourceMappingURL` comments in the file itself |
+| sourceRootResolution | --sourceRootResolution | <folder>                             | base path of the relative sources path in the map |
 
 ### Generating map (apply, write, writeSync)
 | API                      | Command line         | Value       | Description |
 | ------------------------ | -------------------- | ----------- | ----------- |
-| output                   | -o, --output         | `<file>`    | Output file (if absent, will overwrite input) |
+| output                   | -o, --output         | `<file>`    | Output file (if absent, will use input) |
+| excludeContent           | -x, --excludeContent | flag        | Don't populate the sourcesContent array |
+| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[relative-path]` (default)<br/>`[resource-path]`<br/>`[absolute-path]`<br/>`inline`<br/>`none`<br>`<string>`| SourceMapping path is relative to the file map location or `sourceMappingURLBase`<br/>relative-path without root ([drive]:/ or /)<br/>SourceMapping path is absolute</br>Append map as a data URI rather than separate file</br>Remove map reference<br/>TBD|
+| sourceMappingURLBase     | --sourceMappingURLBase | `<folder>`  | allows the base to be specified as something other than the map file, used by `[relative-path]`/`[resource-path]` |
+| sourcePathTemplate       | --sourcePathTemplate | `[relative-path]` (default)<br/>`[resource-path]`<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location or `sourceRootBase`<br/>relative-path without root ([drive]:/ or /)<br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[resource-path]``` |
+| sourceRootBase           | --sourceRootBase     | `<folder>`  | Base path for calculating relative source paths, used by `[relative-path]`/`[resource-path]` |
+| sourceRoot               | --sourceRoot         | `<folder>`  | Root URL for loading relative source paths. Set as sourceRoot in the source map |
+| flatten                  | -f, --flatten        | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map as long as the file (content) exists<br/>do not flatten the map |
+
+### deprecated
+| API                      | Command line         | Value       | Description |
+| ------------------------ | -------------------- | ----------- | ----------- |
 | inline                   | -d, --datauri        | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=inline` |
 | absolutePath             | ---                  | flag        | *deprecated* equivalent to `sourceMappingURLTemplate=[absolute-path]` |
-| excludeContent           | -x, --excludeContent | flag        | Don't populate the sourcesContent array |
 | sourceMappingURL         | --sourceMappingURL   |             | *deprecated* see `sourceMappingURLTemplate` ||
-| sourceMappingURLTemplate | --sourceMappingURLTemplate | `[relative-path]` (default)<br/>`inline`<br/>`none`<br/>`[resource-path]`<br/>`[absolute-path]`<br>`<string>`| TBD</br>Append map as a data URI rather than separate file</br>Remove map reference<br/>TBD<br/>TBD<br/>TBD|
-| sourcePathTemplate       | --sourcePathTemplate | `[relative-path]` (default)<br/>`[resource-path]`<br/>`[absolute-path]`<br/>`<string>`| Source paths are relative to the file location<br/>relative-path without root (C: or /)<br/>Source paths are absolute<br/>Customize the relative path, can contain `[relative-path]` or `[absolute-path]`<br/>for instance ```webpack://[resource-path]``` |
-| sourceRootBase           | --base               | `<folder>`  | allows the base to be specified as something other than the destination file |
-| flatten                  | -f, --flatten        | `full` (default)<br/>`existing`<br/>`<false>` | flatten source map until the original file is reached<br/>flatten source map as long as the file (content) exists<br/>do not flatten the map |
 
 ### misc
 | Command line  | Description |
