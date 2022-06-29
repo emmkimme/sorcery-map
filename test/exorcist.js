@@ -9,16 +9,13 @@ var sourcery_map = require('../');
 const path = require('path');
 
 function exorcist(input, url, root, base, errorOnMissing) {
-  const options = {
-    sourceMappingURLTemplate: url,
-    sourceRootBase: base,
-    sourcePathTemplate: base ? '[relative-path]' : '[absolute-path]',
-    // errorOnMissing
+    const options = {
+      sourceMappingURLTemplate: url,
+      sourcePathBase: base,
+      sourcePathTemplate: base ? '[relative-path]' : '[absolute-path]',
+      sourceRoot: root
+      // errorOnMissing
   };
-  if (root != null) {
-    options.sourceRoot = root;
-  }
-
   return sourcery_map.transform(input, options);
 }
 

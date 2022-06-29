@@ -216,10 +216,10 @@ export class Node {
 
         const sourcesContent = map.sourcesContent || [];
 
-        const sourceRootBases = ( this._file ) ? [ path.dirname( this._file ), ...this._context.sourceRoots ] : this._context.sourceRoots;
+        const sourcePathBases = ( this._file ) ? [ path.dirname( this._file ), ...this._context.sourceRoots ] : this._context.sourceRoots;
 
         const mapSourceRoot = map.sourceRoot ? manageFileProtocol( map.sourceRoot ) : '';
-        const sourceRoots = sourceRootBases.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
+        const sourceRoots = sourcePathBases.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
 
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];

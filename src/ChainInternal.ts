@@ -138,12 +138,12 @@ export class ChainInternal implements Chain {
 
         const map_file = path.basename( content_file || this._node.map.file );
         // source locations are usually compute from the content file origin
-        const sourceRootDefault = content_file ? path.dirname( content_file ) : this._node.context.origin;
+        const sourcePathDefault = content_file ? path.dirname( content_file ) : this._node.context.origin;
         const map = new SourceMap({
             version: 3,
             file: map_file,
             sources: allSources.map( ( sourceNode ) => {
-                return computeSourcePath( sourceRootDefault, sourceNode.file, options );
+                return computeSourcePath( sourcePathDefault, sourceNode.file, options );
             }),
             sourcesContent: allSources.map( ( sourceNode ) => {
                 return options.excludeContent ? null : sourceNode.content;
@@ -269,12 +269,12 @@ function computeSourceMappingURL ( sourceMappingURLDefault: string, map: SourceM
     return sourceMappingURL;
 }
 
-function computeSourcePath ( sourceRootDefault: string, source_file: string, options: Options ) {
+function computeSourcePath ( sourcePathDefault: string, source_file: string, options: Options ) {
     const replacer: Record<string, () => string> = {
         '[absolute-path]': () => source_file,
-        '[relative-path]': () => path.relative( options.sourceRootBase || sourceRootDefault, source_file ),
+        '[relative-path]': () => path.relative( options.sourcePathBase || sourcePathDefault, source_file ),
         '[resource-path]': () => {
-            const result = path.relative( options.sourceRootBase || sourceRootDefault, source_file );
+            const result = path.relative( options.sourcePathBase || sourcePathDefault, source_file );
             const resultParts = path.parse( result );
             return result.substring( resultParts.root.length );
         }

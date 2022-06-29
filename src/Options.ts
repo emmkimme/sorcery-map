@@ -13,34 +13,39 @@ interface InputOptions {
 }
 
 interface OutputOptions {
-    inline?: boolean;        // deprecated: sourceMappingURL === 'inline'
-    absolutePath?: boolean;  // deprecated: sourceMappingURL === '[absolute-path]'
-    sourceMappingURL?: 'inline' | '[absolute-path]';
     sourceMappingURLTemplate?: 'inline' | 'none' | '[absolute-path]' | '[relative-path]' | '[resource-path]' | string;
     sourceMappingURLBase?: string;
     sourcePathTemplate?: '[absolute-path]' | '[relative-path]' | '[resource-path]' | string;
-    sourceRootBase?: string;
+    sourcePathBase?: string;
     sourceRoot?: string;
     excludeContent?: boolean;
     flatten?: 'full' | 'existing' | false
 }
 
-export interface Options extends InputOptions, OutputOptions {
+interface DeprecatedOtions {
+    inline? : boolean;
+    absolutePath?: boolean;
+    base?: string;
+}
+
+
+export interface Options extends InputOptions, OutputOptions, DeprecatedOtions {
 }
 
 /** @internal */
 export function mergeOptions ( ...raw_options: Options[]): Options {
-    const options = Object.assign({}, ...raw_options );
+    const options = Object.assign({}, ...raw_options ) as Options;
 
     options.flatten = options.flatten || 'full';
 
-    options.sourceRootBase = options.sourceRootBase || options.base;
+    // backward compatbility
+    options.sourcePathBase = options.sourcePathBase || options.base;
     options.sourcePathTemplate = options.sourcePathTemplate || '[relative-path]';
 
+    // backward compatbility
     const inline = ( options.inline === true );
     const absolutePath = ( options.absolutePath === true );
-    const sourceMappingURL = inline ? 'inline' : absolutePath ? '[absolute-path]' : options.sourceMappingURL || '[relative-path]';
-    options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || sourceMappingURL;
+    options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || (inline ? 'inline' : absolutePath ? '[absolute-path]' : '[relative-path]');
 
     return options;
 }
@@ -48,7 +53,7 @@ export function mergeOptions ( ...raw_options: Options[]): Options {
 /** @internal */
 export function parseSorceryCommandLine ( command: minimist.ParsedArgs ): Options {
     const options: Options = {
-        inline: command.datauri,
+        sourceMappingURLTemplate: command.datauri ? 'inline' : command.absolutePath ? '[absolute-path]' : undefined,
         excludeContent: command.excludeContent,
         flatten: command.flatten,
         sourceRoot: command.sourceRoot,
@@ -61,14 +66,11 @@ export function parseSorceryCommandLine ( command: minimist.ParsedArgs ): Option
 export function parseExorcistCommandLine ( command: minimist.ParsedArgs ): Options {
     const options: Options = {
         sourceMappingURLTemplate: command.url,
-        sourceRootBase: command.base,
+        sourcePathBase: command.base,
         sourcePathTemplate: command.base ? '[relative-path]' : '[absolute-path]',
+        sourceRoot: command.root
         // errorOnMissing
     };
-    if ( command.root != null ) {
-        options.sourceRoot = command.root;
-    }
-
     return options;
 }
 
@@ -99,7 +101,7 @@ export function parseTransformOptions ( mapFileOrStreamOrOptions?: string | Writ
             output = mapFileOrStreamOrOptions;
         }
         else {
-            options = Object.assign({}, options );
+            options = Object.assign({}, mapFileOrStreamOrOptions );
         }
     }
     return { options, output };
