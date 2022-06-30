@@ -206,7 +206,7 @@ export class ChainInternal implements Chain {
         const options = mergeOptions( this._node.context.options, write_options );
 
         const candidat_map_file = ( typeof map_output === 'string' ) ? path.resolve( map_output ): content_file ? content_file + '.map' : null;
-        const candidat_map_stream = writable( map_output ) ? map_output: null;
+        const candidat_map_stream = writable( map_output ) ? map_output : null;
 
         const map = this._generateMap( content_file, options );
         if ( map ) {
