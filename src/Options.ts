@@ -28,7 +28,6 @@ interface DeprecatedOtions {
     base?: string;
 }
 
-
 export interface Options extends InputOptions, OutputOptions, DeprecatedOtions {
 }
 
