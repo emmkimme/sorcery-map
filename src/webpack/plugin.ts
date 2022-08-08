@@ -4,10 +4,8 @@ import type { Compiler, LoaderOptionsPlugin } from 'webpack';
 
 import { ChainInternal } from '../ChainInternal';
 import { Context } from '../Context';
-import type { Options } from '../Options';
+import { Options, JS_FILE_REGEXP } from '../Options';
 import { Serial } from '../utils/promise';
-
-const JS_FILE_REGEXP = /\.js$/;
 
 export class Plugin implements LoaderOptionsPlugin {
     static pluginName = 'SourceryMapper';

@@ -7,7 +7,7 @@ import { Context } from '../Context';
 import { ChainInternal } from '../ChainInternal';
 import { Options, parseTransformOptions } from '../Options';
 
-export function transform ( mapFileOrStreamOrOptions?: string | Writable | Options, transform_raw_options?: Options ) {
+export function transform ( mapFileOrStream: string | Writable, transform_raw_options?: Options ) {
     let source = '';
 
     const liner = new Transform();
@@ -18,13 +18,13 @@ export function transform ( mapFileOrStreamOrOptions?: string | Writable | Optio
     };
     // to flush remaining data (if any)
     liner._flush = ( done ) => {
-        const { options, output: map_output } = parseTransformOptions( mapFileOrStreamOrOptions, transform_raw_options );
+        const { options, map_output, content_file } = parseTransformOptions( mapFileOrStream, transform_raw_options );
         const context = new Context( path.resolve(), options );
         ChainInternal.Load( context, undefined, source )
             .then( ( chain ) => {
                 if ( chain ) {
                     // inline file not found ! to manage
-                    const { content, map_file, map_stream, map } = chain.getContentAndMap( null, map_output, options );
+                    const { content, map_file, map_stream, map } = chain.getContentAndMap( content_file, map_output, options );
                     if ( map_stream ) {
                         map_stream.end( map.toString(), 'utf-8' );
                     }

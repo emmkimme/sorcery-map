@@ -28,6 +28,10 @@ interface DeprecatedOtions {
     base?: string;
 }
 
+export const JS_FILE_REGEXP = /\.js$/;
+export const MAP_FILE_REGEXP = /\.map$/;
+
+
 export interface Options extends InputOptions, OutputOptions, DeprecatedOtions {
 }
 
@@ -87,22 +91,24 @@ export function parseWriteOptions ( contentFileOrOptions?: string | Options, wri
     return { options, output };
 }
 
-export function parseTransformOptions ( mapFileOrStreamOrOptions?: string | Writable | Options, transform_options?: Options ): { output?: string | Writable, options: Options } {
+export function parseTransformOptions ( mapFileOrStream: string | Writable, transform_options?: Options ): { content_file?: string, map_output?: string | Writable, options: Options } {
     let options: Options;
-    let output: string | Writable;
-    if ( typeof mapFileOrStreamOrOptions === 'string' ) {
+    let map_output: string | Writable;
+    let content_file: string;
+    if ( typeof mapFileOrStream === 'string' ) {
         options = Object.assign({}, transform_options );
-        output = mapFileOrStreamOrOptions;
+        map_output = mapFileOrStream;
+        if (JS_FILE_REGEXP.test( map_output )) {
+            content_file = map_output;
+            map_output = map_output + '.map';
+        }
     }
-    if ( typeof mapFileOrStreamOrOptions === 'object' ) {
-        if ( writable( mapFileOrStreamOrOptions ) ) {
+    else if ( typeof mapFileOrStream === 'object' ) {
+        if ( writable( mapFileOrStream ) ) {
             options = Object.assign({}, transform_options );
-            output = mapFileOrStreamOrOptions;
-        }
-        else {
-            options = Object.assign({}, mapFileOrStreamOrOptions );
+            map_output = mapFileOrStream;
         }
     }
-    return { options, output };
+    return { options, map_output, content_file };
 }
 

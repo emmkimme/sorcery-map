@@ -214,15 +214,22 @@ Examples:
     browserify(inputFile, browserify_options)
     .bundle()
     .pipe(exorcist(mapFile, undefined, undefined, path.dirname(inputFile)))
+    .pipe(fse.createWriteStream(bundleFile));
 ```
 by such code
 ```js
-    .pipe(sourcery_map.transform(bundleFile, { flatten: false, sourceRootResolution: baseDir }))]
+    .pipe(sourcery_map.transform(mapFile, { flatten: false, sourcePathBase: path.dirname(bundleFile) }))]
+    .pipe(fse.createWriteStream(bundleFile));
 ```
 
 you can flatten the map at the same time
 ```js
-    .pipe(sourcery_map.transform(bundleFile, { flatten: 'existing', sourceRootResolution: baseDir }))]
+    .pipe(sourcery_map.transform(mapFile, {
+        flatten: 'existing',
+        sourcePathBase: path.dirname(bundleFile),
+        excludeContent: true
+    }))]
+    .pipe(fse.createWriteStream(bundleFile));
 ```
 
 ## Webpack >= 5.x
