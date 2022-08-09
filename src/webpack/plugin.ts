@@ -5,7 +5,6 @@ import type { Compiler, LoaderOptionsPlugin } from 'webpack';
 import { ChainInternal } from '../ChainInternal';
 import { Context } from '../Context';
 import { Options, JS_FILE_REGEXP } from '../Options';
-import { Serial } from '../utils/promise';
 
 export class Plugin implements LoaderOptionsPlugin {
     static pluginName = 'SourceryMapper';
@@ -33,23 +32,20 @@ export class Plugin implements LoaderOptionsPlugin {
             }
 
             const context = new Context( compiler.context, this._options );
-            // Would prefer to serialize in case of multiple access/s to the same sources
             const sourceries = Array.from( files )
                 .filter( file => JS_FILE_REGEXP.test( file ) )
                 .map( ( file ) => {
-                    return () => {
-                        return ChainInternal.Load( context, path.join( compiler.context, file ) )
-                            .then( ( chain ) => {
-                                if ( chain ) {
-                                    return chain.write();
-                                }
-                                else {
-                                    return Promise.resolve();
-                                }
-                            });
-                    };
+                    return ChainInternal.Load( context, path.join( compiler.context, file ) )
+                        .then( ( chain ) => {
+                            if ( chain ) {
+                                return chain.write();
+                            }
+                            else {
+                                return Promise.resolve();
+                            }
+                        });
                 });
-            return Serial( sourceries ).then( () => {});
+            return Promise.all( sourceries ).then( () => {});
         });
     }
 }
