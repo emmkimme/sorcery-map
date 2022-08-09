@@ -44,7 +44,7 @@ npm install -g sourcery-map
 ### Generating map (apply, write, writeSync)
 | API                      | Command line         | Value       | Description |
 | ------------------------ | -------------------- | ----------- | ----------- |
-| output                   | -o, --output         | `<file>`    | Output file (if absent, will use input) |
+| ---                      | -o, --output         | `<file>`    | Output file (if absent, will use input) |
 | excludeContent           | -x, --excludeContent | flag        | Don't populate the sourcesContent array |
 | sourceMappingURLTemplate | --sourceMappingURLTemplate | `[relative-path]` (default)<br/>`[resource-path]`<br/>`[absolute-path]`<br/>`inline`<br/>`none`<br>`<string>`| SourceMapping path is relative to the file map location or `sourceMappingURLBase`<br/>relative-path without root ([drive]:/ or /)<br/>SourceMapping path is absolute</br>Append map as a data URI rather than separate file</br>Remove map reference<br/>TBD|
 | sourceMappingURLBase     | --sourceMappingURLBase | `<folder>`  | allows the base to be specified as something other than the map file, used by `[relative-path]`/`[resource-path]` |
@@ -102,6 +102,33 @@ Examples:
 ```
 
 ### API
+
+```js
+interface SourceMap {
+    version: 3;
+    file: string;
+    sources: string[];
+    sourcesContent: string[];
+    names: string[];
+    mappings: string;
+    sourceRoot: string;
+    toString(): string;
+    toUrl(): string;
+}
+
+interface Chain {
+    apply ( apply_options: Options ): SourceMap | null;
+    trace ( oneBasedLineIndex: number, zeroBasedColumnIndex: number, trace_options: Options ): Trace;
+
+    write ( write_options?: Options ): Promise<void>;
+    write ( dest: string, write_options?: Options ): Promise<void>;
+    writeSync ( write_options?: Options ): void;
+    writeSync ( dest: string, write_options?: Options ): void;
+}
+
+function load(file: string, options: Options): Promise<Chain | null>;
+function loadSync(file: string, options: Options): Chain | null;
+```
 
 ```js
 var sourcery_map = require( 'sourcery-map' );
@@ -203,6 +230,11 @@ Examples:
 ```
 
 ### API
+
+```js
+function transform(mapFileOrStream: string | Writable, options?: Options): Transform;
+```
+
 ```js
   const basedir = process.cwd();
   const browserify_options = { 
@@ -218,7 +250,7 @@ Examples:
 ```
 by such code
 ```js
-    .pipe(sourcery_map.transform(mapFile, { flatten: false, sourcePathBase: path.dirname(bundleFile) }))]
+    .pipe(sourcery_map.transform(mapFile, { flatten: false, sourcePathBase: path.dirname(inputFile) }))]
     .pipe(fse.createWriteStream(bundleFile));
 ```
 
@@ -226,7 +258,7 @@ you can flatten the map at the same time
 ```js
     .pipe(sourcery_map.transform(mapFile, {
         flatten: 'existing',
-        sourcePathBase: path.dirname(bundleFile),
+        sourcePathBase: path.dirname(inputFile),
         excludeContent: true
     }))]
     .pipe(fse.createWriteStream(bundleFile));
