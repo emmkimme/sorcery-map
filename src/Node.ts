@@ -52,6 +52,9 @@ export class Node {
         return node;
     }
 
+    private static g_nextid = 0;
+
+    private readonly _id: number;
     private readonly _context: Context;
     private readonly _file?: string | null;
     private _content?: string | null;
@@ -71,6 +74,8 @@ export class Node {
         if ( ( this._file == null ) && ( this._content == null ) ) {
             throw new Error( 'A source must specify either file or content' );
         }
+
+        this._id = ++Node.g_nextid;
 
         this._decodingTime = 0;
     }
@@ -221,14 +226,17 @@ export class Node {
         const mapSourceRoot = map.sourceRoot ? manageFileProtocol( map.sourceRoot ) : '';
         const sourceRoots = sourcePathBases.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
 
+        this._context.log( `[Node-${this._id}] map resolve sources using roots: ${sourceRoots}` );
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];
             if ( source && sourceRoots.length ) {
-                const fileResolved = sourceRoots
+                const sourcesResolved = sourceRoots
                     .map( ( sourceRoot ) => {
                         return path.resolve( sourceRoot, source );
                     });
-                source = fileResolved.find( fse.existsSync ) || fileResolved[0];
+                const sourceResolved = sourcesResolved.find( fse.existsSync ) || sourcesResolved[0];
+                this._context.log( `[Node-${this._id}] map source ${source} => ${sourceResolved} using ${sourcesResolved}` );
+                source = sourceResolved;
             }
             return Node.Create( this._context, source, content );
         });
@@ -241,11 +249,14 @@ export class Node {
             this._content = null;
             return fse.readFile( this._file, { encoding: 'utf-8' })
                 .then( ( content ) => {
+                    this._context.log( `[Node-${this._id}] content read from ${this._file}` );
                     this._content = content;
                 })
-                .catch( () => {
+                .catch( ( err ) => {
+                    this._context.log( `[Node-${this._id}] content read failed ${err}` );
                 });
         }
+        this._context.log( `[Node-${this._id}] content is ${this._content ? 'known' : 'null'}` );
         return Promise.resolve();
     }
 
@@ -256,11 +267,14 @@ export class Node {
             this._content = null;
             try {
                 this._content = fse.readFileSync( this._file, { encoding: 'utf-8' });
+                this._context.log( `[Node-${this._id}] content read from ${this._file}` );
             }
-            catch ( e ) {
-                //
+            catch ( err ) {
+                this._context.log( `[Node-${this._id}] content read failed ${err}` );
             }
+            return;
         }
+        this._context.log( `[Node-${this._id}] content is ${this._content ? 'known' : 'null'}` );
     }
 
     private _updateMap (): Promise<void> {
@@ -270,15 +284,19 @@ export class Node {
             this._map = null;
             this._mapInfo = getSourceMappingURLInfo( this._content );
             if ( this._mapInfo ) {
+                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( this._mapInfo )}` );
                 return getSourceMapFromUrl( this._mapInfo.url, this.origin )
                     .then( ( map ) => {
+                        this._context.log( `[Node-${this._id}] map read` );
                         this._map = map;
                     })
                     .catch( ( err ) => {
+                        this._context.log( `[Node-${this._id}] map read failed ${err}` );
                         // throw new Error(`Error when reading map ${url}`);
                     });
             }
         }
+        this._context.log( `[Node-${this._id}] map is ${this._map ? 'known' : 'null'}` );
         return Promise.resolve();
     }
 
@@ -289,14 +307,19 @@ export class Node {
             this._map = null;
             this._mapInfo = getSourceMappingURLInfo( this._content );
             if ( this._mapInfo ) {
+                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( this._mapInfo )}` );
                 try {
                     this._map = getSourceMapFromUrlSync( this._mapInfo.url, this.origin );
+                    this._context.log( `[Node-${this._id}] map read` );
                 }
                 catch ( err ) {
+                    this._context.log( `[Node-${this._id}] map read failed ${err}` );
                     // throw new Error(`Error when reading map ${url}`);
                 }
+                return;
             }
         }
+        this._context.log( `[Node-${this._id}] map is ${this._map ? 'known' : 'null'}` );
     }
 
 }

@@ -48,7 +48,7 @@ export function mergeOptions ( ...raw_options: Options[]): Options {
     // backward compatbility
     const inline = ( options.inline === true );
     const absolutePath = ( options.absolutePath === true );
-    options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || (inline ? 'inline' : absolutePath ? '[absolute-path]' : '[relative-path]');
+    options.sourceMappingURLTemplate = options.sourceMappingURLTemplate || ( inline ? 'inline' : absolutePath ? '[absolute-path]' : '[relative-path]' );
 
     return options;
 }
@@ -98,7 +98,7 @@ export function parseTransformOptions ( mapFileOrStream: string | Writable, tran
     if ( typeof mapFileOrStream === 'string' ) {
         options = Object.assign({}, transform_options );
         map_output = mapFileOrStream;
-        if (JS_FILE_REGEXP.test( map_output )) {
+        if ( JS_FILE_REGEXP.test( map_output ) ) {
             content_file = map_output;
             map_output = map_output + '.map';
         }

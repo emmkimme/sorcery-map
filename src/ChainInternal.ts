@@ -136,12 +136,12 @@ export class ChainInternal implements Chain {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        const map_file = path.basename( content_file || this._node.map.file );
+        const map_content_file = path.basename( content_file || this._node.map.file );
         // source locations are usually compute from the content file origin
         const sourcePathDefault = content_file ? path.dirname( content_file ) : this._node.context.origin;
         const map = new SourceMap({
             version: 3,
-            file: map_file,
+            file: map_content_file,
             sources: allSources.map( ( sourceNode ) => {
                 return computeSourcePath( sourcePathDefault, sourceNode.file, options );
             }),

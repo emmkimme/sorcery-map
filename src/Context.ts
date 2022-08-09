@@ -49,6 +49,14 @@ export class Context {
         }
     }
 
+    log ( message: string ) {
+        // this._options = this._options || {};
+        // this._options.verbose = true;
+        if ( this._options.verbose === true ) {
+            console.log( message );
+        }
+    }
+
     get cache () {
         return this._nodeCacheByFile;
     }
