@@ -1,7 +1,7 @@
 {
   "name": "sourcery-map",
   "description": "Find your way through the chain of sourcemaps to the original source, like magic sourcery",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "author": "Emmanuel Kimmerlin",
   "repository": "https://github.com/emmkimme/sourcery-map",
   "license": "MIT",
@@ -84,7 +84,7 @@
   },
   "scripts": {
     "clean": "del-cli -f lib",
-    "build": "npm run clean && run-p build-ts:*",
+    "build": "run-p clean lint:fix && run-p build-ts:*",
     "build-ts:cjs": "tsc -p tsconfig.cjs.json",
     "build-ts:esm": "tsc -p tsconfig.esm.json",
     "_pretest": "npm run build",
@@ -94,6 +94,7 @@
     "test:tap": "tap test/exorcist.js",
     "prepublish": "npm test",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "pretest-coverage": "npm run build",
     "test-coverage": "del-cli -f coverage && istanbul cover --report json node_modules/mocha/bin/mocha.js -- -u exports -R spec test/test.js",
     "posttest-coverage": "remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.lcov -t lcovonly -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped -t html -b dist",

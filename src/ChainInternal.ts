@@ -53,10 +53,10 @@ export class ChainInternal implements Chain {
     }
 
     apply ( apply_options: Options ): SourceMap | null {
-        return this._generateMap( this._node.file, apply_options );
+        return this._generateMap( this._node.file, null, apply_options );
     }
 
-    private _generateMap ( content_file: string, apply_options: Options ): SourceMap | null {
+    private _generateMap ( content_file: string, map_file: string, apply_options: Options ): SourceMap | null {
         const options = mergeOptions( this._node.context.options, apply_options );
 
         if ( !this._node.map || ( options && options.flatten === 'existing' && !this._node.isCompleteSourceContent ) ) {
@@ -136,9 +136,22 @@ export class ChainInternal implements Chain {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
+        map_file = map_file || this._node.mapInfo && this._node.mapInfo.file;
+
+        let sourcePathDefault: string;
+        // source default path is related to map file location
+        if ( map_file ) {
+            sourcePathDefault = path.dirname( map_file );
+        }
+        // else related to content file location
+        else if ( content_file ) {
+            sourcePathDefault = path.dirname( content_file );
+        }
+        // else depending on the context
+        else {
+            sourcePathDefault = this._node.context.origin;
+        }
         const map_content_file = path.basename( content_file || this._node.map.file );
-        // source locations are usually compute from the content file origin
-        const sourcePathDefault = content_file ? path.dirname( content_file ) : this._node.context.origin;
         const map = new SourceMap({
             version: 3,
             file: map_content_file,
@@ -207,11 +220,11 @@ export class ChainInternal implements Chain {
 
         const candidat_map_file = ( typeof map_output === 'string' ) ? path.resolve( map_output ): content_file ? content_file + '.map' : null;
         const candidat_map_stream = writable( map_output ) ? map_output : null;
+        const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null : candidat_map_file;
+        const map_stream = ( options.sourceMappingURLTemplate === 'inline' ) ? null : candidat_map_stream;
 
-        const map = this._generateMap( content_file, options );
+        const map = this._generateMap( content_file, map_file, options );
         if ( map ) {
-            const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null : candidat_map_file;
-            const map_stream = ( options.sourceMappingURLTemplate === 'inline' ) ? null : candidat_map_stream;
             const sourceMappingURLDefault = content_file ? path.dirname( content_file ) : map_file ? path.dirname( map_file ) : this._node.context.origin;
             const sourceMappingURL = computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options );
 
