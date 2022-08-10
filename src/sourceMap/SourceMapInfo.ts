@@ -28,34 +28,26 @@ export class SourceMapInfo implements SourceMapInfoProps {
         return getSourceMappingURLInfo( content, this );
     }
 
-    readMap ( base: string ): Promise<SourceMapProps | null> {
-        const raw_map = getRawMapFromBase64( this.url );
-        if ( raw_map ) {
-            return Promise.resolve( parseJSON( raw_map ) );
+    readMap ( base: string ): Promise<SourceMapProps> {
+        const base64_str = getRawMapFromBase64( this.url );
+        if ( base64_str ) {
+            return Promise.resolve( parseJSON( base64_str ) );
         }
         this.file = path.resolve( base, this.url );
         return fse.readFile( this.file, { encoding: 'utf-8' })
-            .then( ( raw_map ) => {
-                return parseJSON( raw_map );
-            })
-            .catch ( ( err ) => {
-                return null;
+            .then( ( file_str ) => {
+                return parseJSON( file_str );
             });
     }
 
-    readMapSync ( base: string ): SourceMapProps | null {
-        const raw_map = getRawMapFromBase64( this.url );
-        if ( raw_map ) {
-            return parseJSON( raw_map );
+    readMapSync ( base: string ): SourceMapProps {
+        const base64_str = getRawMapFromBase64( this.url );
+        if ( base64_str ) {
+            return parseJSON( base64_str );
         }
         this.file = path.resolve( base, this.url );
-        try {
-            const raw_map = fse.readFileSync( this.file, { encoding: 'utf-8' });
-            return parseJSON( raw_map );
-        }
-        catch ( err ) {
-            return null;
-        }
+        const file_str = fse.readFileSync( this.file, { encoding: 'utf-8' });
+        return parseJSON( file_str );
     }
 }
 
@@ -67,12 +59,7 @@ export class SourceMapInfo implements SourceMapInfoProps {
  * see \webpack\source-map-loader\dist\index.js
  */
 function parseJSON ( json: string ): SourceMapProps | null {
-    try {
-        return JSON.parse( json.replace( /^\)]}'[^\n]*\n/, '' ) );
-    }
-    catch ( err ) {
-        return null;
-    }
+    return JSON.parse( json.replace( /^\)]}'[^\n]*\n/, '' ) );
 }
 
 function getRawMapFromBase64 ( url: string ): string | null {

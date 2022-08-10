@@ -219,20 +219,20 @@ export class Node {
         this._decodingTime = 1e9 * hrDecodingTime[0] + hrDecodingTime[1];
 
         const localSourceRoots = new Set<string>();
-        // map location has the priority
-        if (this._mapInfo && this._mapInfo.file) {
-            localSourceRoots.add(path.dirname( this._mapInfo.file ));
+        // map file location has the priority
+        if ( this._mapInfo && this._mapInfo.file ) {
+            localSourceRoots.add( path.dirname( this._mapInfo.file ) );
         }
-        // then file location
-        if (this._file) {
-            localSourceRoots.add(path.dirname( this._file ));
+        // then content file location
+        if ( this._file ) {
+            localSourceRoots.add( path.dirname( this._file ) );
         }
         // then other locations depending on the context
-        this._context.sourceRoots.forEach((sourceRoot) => localSourceRoots.add(sourceRoot));
+        this._context.sourceRoots.forEach( ( sourceRoot ) => localSourceRoots.add( sourceRoot ) );
 
-        // generate absolute path base of the 'sourceRoot' map field
+        // generate absolute path based on the 'sourceRoot' map field
         const mapSourceRoot = map.sourceRoot ? manageFileProtocol( map.sourceRoot ) : '';
-        const sourceRoots = Array.from(localSourceRoots).map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
+        const sourceRoots = Array.from( localSourceRoots ).map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
 
         this._context.log( `[Node-${this._id}] map resolve sources using roots: ${sourceRoots}` );
 
