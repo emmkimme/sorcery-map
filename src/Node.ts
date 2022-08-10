@@ -9,9 +9,7 @@ import type { Trace } from './Trace';
 import type { Options } from './Options';
 import type { Context } from './Context';
 import type { SourceMapProps } from './sourceMap/SourceMap';
-import { getSourceMappingURLInfo  } from './sourceMap/sourceMappingURL';
-import { getSourceMapFromUrl, getSourceMapFromUrlSync } from './sourceMap/getMapFromUrl';
-import type { SourceMapInfo } from './sourceMap/SourceMapInfo';
+import { SourceMapInfo, SourceMapInfoProps } from './sourceMap/SourceMapInfo';
 
 /** @internal */
 export class Node {
@@ -59,7 +57,7 @@ export class Node {
     private readonly _context: Context;
     private readonly _file?: string | null;
     private _content?: string | null;
-    private _mapInfo?: SourceMapInfo | null;
+    private _mapInfo?: SourceMapInfoProps | null;
     private _map?: SourceMapProps | null;
     private _mappings: SourceMapMappings;
     private _sources: Node[];
@@ -220,14 +218,25 @@ export class Node {
         const hrDecodingTime = process.hrtime( hrDecodingStart );
         this._decodingTime = 1e9 * hrDecodingTime[0] + hrDecodingTime[1];
 
-        const sourcesContent = map.sourcesContent || [];
+        const localSourceRoots = new Set<string>();
+        // map location has the priority
+        if (this._mapInfo && this._mapInfo.file) {
+            localSourceRoots.add(path.dirname( this._mapInfo.file ));
+        }
+        // then file location
+        if (this._file) {
+            localSourceRoots.add(path.dirname( this._file ));
+        }
+        // then other locations depending on the context
+        this._context.sourceRoots.forEach((sourceRoot) => localSourceRoots.add(sourceRoot));
 
-        const sourcePathBases = ( this._file ) ? [ path.dirname( this._file ), ...this._context.sourceRoots ] : this._context.sourceRoots;
-
+        // generate absolute path base of the 'sourceRoot' map field
         const mapSourceRoot = map.sourceRoot ? manageFileProtocol( map.sourceRoot ) : '';
-        const sourceRoots = sourcePathBases.map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
+        const sourceRoots = Array.from(localSourceRoots).map( ( sourceRoot ) => path.resolve( sourceRoot, mapSourceRoot ) );
 
         this._context.log( `[Node-${this._id}] map resolve sources using roots: ${sourceRoots}` );
+
+        const sourcesContent = map.sourcesContent || [];
         this._sources = map.sources.map( ( source, i ) => {
             const content = ( sourcesContent[i] == null ) ? undefined : sourcesContent[i];
             if ( source && sourceRoots.length ) {
@@ -283,10 +292,11 @@ export class Node {
         // 'null' seen but not found
         if ( this._map === undefined ) {
             this._map = null;
-            this._mapInfo = getSourceMappingURLInfo( this._content );
-            if ( this._mapInfo ) {
-                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( this._mapInfo )}` );
-                return getSourceMapFromUrl( this._mapInfo, this.origin )
+            const mapInfo = new SourceMapInfo();
+            if ( mapInfo.readContent( this._content ) ) {
+                this._mapInfo = mapInfo;
+                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( mapInfo )}` );
+                return mapInfo.readMap( this.origin )
                     .then( ( map ) => {
                         this._context.log( `[Node-${this._id}] map read` );
                         this._map = map;
@@ -306,11 +316,12 @@ export class Node {
         // 'null' seen but not found
         if ( this._map === undefined ) {
             this._map = null;
-            this._mapInfo = getSourceMappingURLInfo( this._content );
-            if ( this._mapInfo ) {
-                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( this._mapInfo )}` );
+            const mapInfo = new SourceMapInfo();
+            if ( mapInfo.readContent( this._content ) ) {
+                this._mapInfo = mapInfo;
+                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( mapInfo )}` );
                 try {
-                    this._map = getSourceMapFromUrlSync( this._mapInfo, this.origin );
+                    this._map = mapInfo.readMapSync( this.origin );
                     this._context.log( `[Node-${this._id}] map read` );
                 }
                 catch ( err ) {

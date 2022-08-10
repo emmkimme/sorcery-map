@@ -1,4 +1,4 @@
-import type { SourceMapInfo } from './SourceMapInfo';
+import type { SourceMapInfoProps } from './SourceMapInfo';
 
 /** @internal */
 export const sourceMappingURLProp = 'sourceMappingURL';
@@ -29,7 +29,7 @@ function findSourceMappingURLExecArray ( str: string ): RegExpExecArray | null {
 }
 
 /** @internal */
-export function getSourceMappingURLInfo ( str: string, sourceMapInfo?: SourceMapInfo ): SourceMapInfo | null {
+export function getSourceMappingURLInfo ( str: string, sourceMapInfo?: SourceMapInfoProps ): SourceMapInfoProps | null {
     const match = findSourceMappingURLExecArray( str );
     if ( !match ) {
         return null;
@@ -56,7 +56,7 @@ export function getSourceMappingURLInfo ( str: string, sourceMapInfo?: SourceMap
 }
 
 /** @internal */
-export function replaceSourceMappingURLComment ( content: string, sourceMapInfo?: SourceMapInfo ) {
+export function replaceSourceMappingURLComment ( content: string, sourceMapInfo?: SourceMapInfoProps ) {
     sourceMapInfo = sourceMapInfo || { url: '' };
     const newComment = generateSourceMappingURLComment( sourceMapInfo );
     if ( sourceMapInfo.comment ) {
@@ -73,7 +73,7 @@ export function replaceSourceMappingURLComment ( content: string, sourceMapInfo?
 }
 
 /** @internal */
-export function generateSourceMappingURLComment ( sourceMapInfo: SourceMapInfo ) {
+export function generateSourceMappingURLComment ( sourceMapInfo: SourceMapInfoProps ) {
     if ( !sourceMapInfo.url ) {
         return '';
     }
