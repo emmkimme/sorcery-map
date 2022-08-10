@@ -4,10 +4,10 @@ import * as fse from 'fs-extra';
 import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
 import { writable } from 'is-stream';
 
-import { replaceSourceMappingURLComment } from './utils/sourceMappingURL';
+import { replaceSourceMappingURLComment } from './sourceMap/sourceMappingURL';
 import { slash } from './utils/path';
 
-import { SourceMap, SourceMapProps } from './SourceMap';
+import { SourceMap, SourceMapProps } from './sourceMap/SourceMap';
 import type { Stats } from './Stats';
 import { parseWriteOptions, Options } from './Options';
 import { Node } from './Node';

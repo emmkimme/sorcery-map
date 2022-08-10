@@ -1,7 +1,7 @@
 import type { LoaderContext } from 'webpack';
 
 import { Context } from '../Context';
-import type { SourceMapProps } from '../SourceMap';
+import type { SourceMapProps } from '../sourceMap/SourceMap';
 import { ChainInternal } from '../ChainInternal';
 
 export function loader ( input: string, inputMap: string ) {

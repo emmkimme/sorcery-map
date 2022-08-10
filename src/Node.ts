@@ -8,9 +8,10 @@ import { manageFileProtocol } from './utils/path';
 import type { Trace } from './Trace';
 import type { Options } from './Options';
 import type { Context } from './Context';
-import type { SourceMapProps } from './SourceMap';
-import { getSourceMappingURLInfo, SourceMappingURLInfo } from './utils/sourceMappingURL';
-import { getSourceMapFromUrl, getSourceMapFromUrlSync } from './utils/getMapFromUrl';
+import type { SourceMapProps } from './sourceMap/SourceMap';
+import { getSourceMappingURLInfo  } from './sourceMap/sourceMappingURL';
+import { getSourceMapFromUrl, getSourceMapFromUrlSync } from './sourceMap/getMapFromUrl';
+import type { SourceMapInfo } from './sourceMap/SourceMapInfo';
 
 /** @internal */
 export class Node {
@@ -58,7 +59,7 @@ export class Node {
     private readonly _context: Context;
     private readonly _file?: string | null;
     private _content?: string | null;
-    private _mapInfo?: SourceMappingURLInfo | null;
+    private _mapInfo?: SourceMapInfo | null;
     private _map?: SourceMapProps | null;
     private _mappings: SourceMapMappings;
     private _sources: Node[];
@@ -285,7 +286,7 @@ export class Node {
             this._mapInfo = getSourceMappingURLInfo( this._content );
             if ( this._mapInfo ) {
                 this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( this._mapInfo )}` );
-                return getSourceMapFromUrl( this._mapInfo.url, this.origin )
+                return getSourceMapFromUrl( this._mapInfo, this.origin )
                     .then( ( map ) => {
                         this._context.log( `[Node-${this._id}] map read` );
                         this._map = map;
@@ -309,7 +310,7 @@ export class Node {
             if ( this._mapInfo ) {
                 this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( this._mapInfo )}` );
                 try {
-                    this._map = getSourceMapFromUrlSync( this._mapInfo.url, this.origin );
+                    this._map = getSourceMapFromUrlSync( this._mapInfo, this.origin );
                     this._context.log( `[Node-${this._id}] map read` );
                 }
                 catch ( err ) {

@@ -1,5 +1,5 @@
 import type { Trace } from './Trace';
-import type { SourceMap } from './SourceMap';
+import type { SourceMap } from './sourceMap/SourceMap';
 import type { Stats } from './Stats';
 import type { Options } from './Options';
 

@@ -2,10 +2,11 @@ import * as path from 'path';
 
 import * as fse from 'fs-extra';
 
-import type { SourceMapProps } from '../SourceMap.js';
+import type { SourceMapProps } from './SourceMap.js';
 
-import atob from './atob.js';
+import atob from '../utils/atob.js';
 import { sourceMappingURLProp } from './sourceMappingURL';
+import type { SourceMapInfo } from './SourceMapInfo.js';
 
 /**
  * Strip any JSON XSSI avoidance prefix from the string (as documented
@@ -46,9 +47,9 @@ function getRawMapFromFileSync ( url: string, base: string ): string | null {
 }
 
 /** @internal */
-export function getSourceMapFromUrl ( url: string, base: string ): Promise<SourceMapProps | null> {
-    const raw_map = getRawMapFromBase64( url );
-    const promise = raw_map ? Promise.resolve( raw_map ) : getRawMapFromFile( url, base );
+export function getSourceMapFromUrl ( sourceMapInfo: SourceMapInfo, base: string ): Promise<SourceMapProps | null> {
+    const raw_map = getRawMapFromBase64( sourceMapInfo.url );
+    const promise = raw_map ? Promise.resolve( raw_map ) : getRawMapFromFile( sourceMapInfo.url, base );
     return promise
         .then( ( raw_map ) => {
             return raw_map ? parseJSON( raw_map ): null;
@@ -57,8 +58,8 @@ export function getSourceMapFromUrl ( url: string, base: string ): Promise<Sourc
 }
 
 /** @internal */
-export function getSourceMapFromUrlSync ( url: string, base: string ): SourceMapProps | null {
-    const raw_map = getRawMapFromBase64( url ) || getRawMapFromFileSync( url, base );
+export function getSourceMapFromUrlSync ( sourceMapInfo: SourceMapInfo, base: string ): SourceMapProps | null {
+    const raw_map = getRawMapFromBase64( sourceMapInfo.url ) || getRawMapFromFileSync( sourceMapInfo.url, base );
     try {
         return raw_map ? parseJSON( raw_map ): null;
     }

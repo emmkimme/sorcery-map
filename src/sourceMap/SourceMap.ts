@@ -1,4 +1,4 @@
-import btoa from './utils/btoa';
+import btoa from '../utils/btoa';
 
 export interface SourceMapProps {
     version: 3;

@@ -2,7 +2,7 @@ import { writable } from 'is-stream';
 import type * as minimist from 'minimist';
 import type { Writable } from 'stream';
 
-import type { SourceMapProps } from './SourceMap';
+import type { SourceMapProps } from './sourceMap/SourceMap';
 
 interface InputOptions {
     content?: { [file: string]: string };

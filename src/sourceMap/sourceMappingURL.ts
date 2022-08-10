@@ -1,3 +1,5 @@
+import type { SourceMapInfo } from './SourceMapInfo';
+
 /** @internal */
 export const sourceMappingURLProp = 'sourceMappingURL';
 
@@ -10,12 +12,6 @@ const sourceMappingURLEx =
 
 /** @internal */
 export const sourceMappingURLRegex = new RegExp( sourceMappingURLEx );
-
-/** @internal */
-export interface SourceMappingURLInfo {
-    url: string;
-    comment?: string;
-}
 
 function findSourceMappingURLExecArray ( str: string ): RegExpExecArray | null {
     if ( !str ) {
@@ -33,7 +29,7 @@ function findSourceMappingURLExecArray ( str: string ): RegExpExecArray | null {
 }
 
 /** @internal */
-export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | null {
+export function getSourceMappingURLInfo ( str: string, sourceMapInfo?: SourceMapInfo ): SourceMapInfo | null {
     const match = findSourceMappingURLExecArray( str );
     if ( !match ) {
         return null;
@@ -52,18 +48,19 @@ export function getSourceMappingURLInfo ( str: string ): SourceMappingURLInfo | 
 
     // Clean up again
     info[1] = info[1].trim();
-    return {
-        url : decodeURI( info[1]),
-        comment: info[0]
-    };
+
+    sourceMapInfo = sourceMapInfo || {};
+    sourceMapInfo.url = decodeURI( info[1]);
+    sourceMapInfo.comment = info[0];
+    return sourceMapInfo;
 }
 
 /** @internal */
-export function replaceSourceMappingURLComment ( content: string, sourceMappingURLInfo?: SourceMappingURLInfo ) {
-    sourceMappingURLInfo = sourceMappingURLInfo || { url: '' };
-    const newComment = generateSourceMappingURLComment( sourceMappingURLInfo );
-    if ( sourceMappingURLInfo.comment ) {
-        return content.replace( sourceMappingURLInfo.comment, newComment );
+export function replaceSourceMappingURLComment ( content: string, sourceMapInfo?: SourceMapInfo ) {
+    sourceMapInfo = sourceMapInfo || { url: '' };
+    const newComment = generateSourceMappingURLComment( sourceMapInfo );
+    if ( sourceMapInfo.comment ) {
+        return content.replace( sourceMapInfo.comment, newComment );
     }
     const info = getSourceMappingURLInfo( content );
     if ( info ) {
@@ -76,12 +73,12 @@ export function replaceSourceMappingURLComment ( content: string, sourceMappingU
 }
 
 /** @internal */
-export function generateSourceMappingURLComment ( sourceMappingURLInfo: SourceMappingURLInfo ) {
-    if ( !sourceMappingURLInfo.url ) {
+export function generateSourceMappingURLComment ( sourceMapInfo: SourceMapInfo ) {
+    if ( !sourceMapInfo.url ) {
         return '';
     }
-    const sourceMappingURL = encodeURI( sourceMappingURLInfo.url );
-    if ( sourceMappingURLInfo.comment == null || ( sourceMappingURLInfo.comment[1] === '*' ) ) {
+    const sourceMappingURL = encodeURI( sourceMapInfo.url );
+    if ( sourceMapInfo.comment == null || ( sourceMapInfo.comment[1] === '*' ) ) {
         return `/*# ${sourceMappingURLProp}=${sourceMappingURL} */`;
     }
     else {
