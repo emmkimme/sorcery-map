@@ -92,6 +92,7 @@ export function parseWriteOptions ( contentFileOrOptions?: string | Options, wri
     return { options, output };
 }
 
+/** @internal */
 export function parseTransformOptions ( mapFileOrStream: string | Writable, transform_options?: Options ): { content_file?: string, map_output?: string | Writable, options: Options } {
     let options: Options;
     let map_output: string | Writable;
