@@ -224,23 +224,13 @@ export class ChainInternal implements Chain {
         const map_stream = ( options.sourceMappingURLTemplate === 'inline' ) ? null : candidat_map_stream;
 
         const map = this._generateMap( content_file, map_file, options );
-        if ( map ) {
-            const sourceMappingURLDefault = content_file ? path.dirname( content_file ) : map_file ? path.dirname( map_file ) : this._node.context.origin;
-            const sourceMappingURL = this._computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options );
-
-            const newSourceMappingURLInfo = { url: sourceMappingURL };
-            // inherit of current info for optimizing replacement
-            const info = this._node.mapInfo ? { ...this._node.mapInfo, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
-            const content = this._node.content && replaceSourceMappingURLComment( this._node.content, info );
-            return { content_file, content, map_file, map_stream, map };
-        }
-        else {
-            const newSourceMappingURLInfo = { url: '' };
-            // inherit of current info for optimizing replacement
-            const info = this._node.mapInfo ? { ...this._node.mapInfo, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
-            const content = this._node.content && replaceSourceMappingURLComment( this._node.content, info );
-            return { content_file, content };
-        }
+        const sourceMappingURLDefault = content_file ? path.dirname( content_file ) : map_file ? path.dirname( map_file ) : this._node.context.origin;
+        const sourceMappingURL = map ? this._computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options ) : '';
+        const newSourceMappingURLInfo = { url: sourceMappingURL };
+        // inherit of current info for optimizing replacement
+        const info = this._node.mapInfo ? { ...this._node.mapInfo, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
+        const content = this._node.content && replaceSourceMappingURLComment( this._node.content, info );
+        return { content_file, content, map_file, map_stream, map };
     }
 
     private _computeSourceMappingURL ( sourceMappingURLDefault: string, map: SourceMap, map_file: string, options: Options ) {
