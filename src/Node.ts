@@ -259,11 +259,11 @@ export class Node {
             this._content = null;
             return fse.readFile( this._file, { encoding: 'utf-8' })
                 .then( ( content ) => {
-                    this._context.log( `[Node-${this._id}] content read from ${this._file}` );
+                    this._context.log( `[Node-${this._id}] read content from ${this._file}` );
                     this._content = content;
                 })
                 .catch( ( err ) => {
-                    this._context.log( `[Node-${this._id}] content read failed ${err}` );
+                    this._context.log( `[Node-${this._id}] read content failed ${err}` );
                 });
         }
         this._context.log( `[Node-${this._id}] content is ${this._content ? 'known' : 'null'}` );
@@ -277,14 +277,30 @@ export class Node {
             this._content = null;
             try {
                 this._content = fse.readFileSync( this._file, { encoding: 'utf-8' });
-                this._context.log( `[Node-${this._id}] content read from ${this._file}` );
+                this._context.log( `[Node-${this._id}] read content from ${this._file}` );
             }
             catch ( err ) {
-                this._context.log( `[Node-${this._id}] content read failed ${err}` );
+                this._context.log( `[Node-${this._id}] read content failed ${err}` );
             }
             return;
         }
         this._context.log( `[Node-${this._id}] content is ${this._content ? 'known' : 'null'}` );
+    }
+
+    private _flushMapInfo () {
+        this._context.log( `[Node-${this._id}] map ${JSON.stringify( this._mapInfo )}` );
+        this._flushMap( this._map );
+    }
+
+    private _flushMap ( map: SourceMapProps ) {
+        if ( this._context.logActivated() ) {
+            if ( map ) {
+                this._context.log( JSON.stringify( map, null, 4 ) );
+            }
+            else {
+                this._context.log( 'no map' );
+            }
+        }
     }
 
     private _updateMap (): Promise<void> {
@@ -295,19 +311,21 @@ export class Node {
             const mapInfo = new SourceMapInfo();
             if ( mapInfo.readContent( this._content ) ) {
                 this._mapInfo = mapInfo;
-                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( mapInfo )}` );
                 return mapInfo.readMap( this.origin )
                     .then( ( map ) => {
-                        this._context.log( `[Node-${this._id}] map read` );
+                        this._context.log( `[Node-${this._id}] read map` );
                         this._map = map;
                     })
                     .catch( ( err ) => {
-                        this._context.log( `[Node-${this._id}] map read failed ${err}` );
+                        this._context.log( `[Node-${this._id}] read map failed ${err}` );
                         // throw new Error(`Error when reading map ${url}`);
+                    })
+                    .finally( () => {
+                        this._flushMapInfo();
                     });
             }
         }
-        this._context.log( `[Node-${this._id}] map is ${this._map ? 'known' : 'null'}` );
+        this._flushMapInfo();
         return Promise.resolve();
     }
 
@@ -319,19 +337,21 @@ export class Node {
             const mapInfo = new SourceMapInfo();
             if ( mapInfo.readContent( this._content ) ) {
                 this._mapInfo = mapInfo;
-                this._context.log( `[Node-${this._id}] get source map info: ${JSON.stringify( mapInfo )}` );
                 try {
                     this._map = mapInfo.readMapSync( this.origin );
-                    this._context.log( `[Node-${this._id}] map read` );
+                    this._context.log( `[Node-${this._id}] read map` );
                 }
                 catch ( err ) {
-                    this._context.log( `[Node-${this._id}] map read failed ${err}` );
+                    this._context.log( `[Node-${this._id}] read map failed ${err}` );
                     // throw new Error(`Error when reading map ${url}`);
+                }
+                finally {
+                    this._flushMapInfo();
                 }
                 return;
             }
         }
-        this._context.log( `[Node-${this._id}] map is ${this._map ? 'known' : 'null'}` );
+        this._flushMapInfo();
     }
 
 }

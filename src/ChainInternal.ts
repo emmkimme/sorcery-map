@@ -53,7 +53,8 @@ export class ChainInternal implements Chain {
     }
 
     apply ( apply_options: Options ): SourceMap | null {
-        return this._generateMap( this._node.file, null, apply_options );
+        const map_file = this._node.mapInfo && this._node.mapInfo.file;
+        return this._generateMap( this._node.file, map_file, apply_options );
     }
 
     private _generateMap ( content_file: string, map_file: string, apply_options: Options ): SourceMap | null {
@@ -136,8 +137,6 @@ export class ChainInternal implements Chain {
         const hrEncodingTime = process.hrtime( hrEncodingStart );
         this._stats.encodingTime = 1e9 * hrEncodingTime[0] + hrEncodingTime[1];
 
-        map_file = map_file || this._node.mapInfo && this._node.mapInfo.file;
-
         let sourcePathDefault: string;
         // source default path is related to map file location
         if ( map_file ) {
@@ -156,7 +155,7 @@ export class ChainInternal implements Chain {
             version: 3,
             file: map_content_file,
             sources: allSources.map( ( sourceNode ) => {
-                return computeSourcePath( sourcePathDefault, sourceNode.file, options );
+                return this._computeSourcePath( sourcePathDefault, sourceNode.file, options );
             }),
             sourcesContent: allSources.map( ( sourceNode ) => {
                 return options.excludeContent ? null : sourceNode.content;
@@ -168,6 +167,7 @@ export class ChainInternal implements Chain {
         if ( map_sourceRoot != null ) {
             map.sourceRoot = map_sourceRoot;
         }
+        this._node.context.log( JSON.stringify( map, null, 4 ) );
         return map;
     }
 
@@ -226,7 +226,7 @@ export class ChainInternal implements Chain {
         const map = this._generateMap( content_file, map_file, options );
         if ( map ) {
             const sourceMappingURLDefault = content_file ? path.dirname( content_file ) : map_file ? path.dirname( map_file ) : this._node.context.origin;
-            const sourceMappingURL = computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options );
+            const sourceMappingURL = this._computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options );
 
             const newSourceMappingURLInfo = { url: sourceMappingURL };
             // inherit of current info for optimizing replacement
@@ -242,61 +242,66 @@ export class ChainInternal implements Chain {
             return { content_file, content };
         }
     }
+
+    private _computeSourceMappingURL ( sourceMappingURLDefault: string, map: SourceMap, map_file: string, options: Options ) {
+        this._node.context.log( `[write] computeSourceMappingURL sourceMappingURLDefault=${sourceMappingURLDefault}, map_file=${map_file}. options=${JSON.stringify( options )}` );
+        let sourceMappingURL = options.sourceMappingURLTemplate;
+        if ( sourceMappingURL === 'inline' ) {
+            sourceMappingURL = map.toUrl();
+        }
+        else if ( sourceMappingURL === 'none' ) {
+            sourceMappingURL = null;
+        }
+        else {
+            const replacer: Record<string, () => string> = {
+                '[absolute-path]': () => map_file,
+                '[relative-path]': () => path.relative( options.sourceMappingURLBase || sourceMappingURLDefault, map_file ),
+                '[resource-path]': () => {
+                    const result = path.relative( options.sourceMappingURLBase || sourceMappingURLDefault, map_file );
+                    const resultParts = path.parse( result );
+                    return result.substring( resultParts.root.length );
+                }
+            };
+            Object.keys( replacer ).forEach( ( key ) => {
+                if ( sourceMappingURL.includes( key ) ) {
+                    try {
+                        sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
+                    }
+                    catch ( err ) {
+                        throw new Error( 'map file URL is required' );
+                    }
+                }
+            });
+        }
+        this._node.context.log( `[write] => sourceMappingURL=${sourceMappingURL}` );
+        return sourceMappingURL;
+    }
+    
+    private _computeSourcePath ( sourcePathDefault: string, source_file: string, options: Options ) {
+        this._node.context.log( `[write] computeSourcePath sourcePathDefault=${sourcePathDefault}, source_file=${source_file}. options=${JSON.stringify( options )}` );
+        const replacer: Record<string, () => string> = {
+            '[absolute-path]': () => source_file,
+            '[relative-path]': () => path.relative( options.sourcePathBase || sourcePathDefault, source_file ),
+            '[resource-path]': () => {
+                const result = path.relative( options.sourcePathBase || sourcePathDefault, source_file );
+                const resultParts = path.parse( result );
+                return result.substring( resultParts.root.length );
+            }
+        };
+        let sourcePath = options.sourcePathTemplate;
+        Object.keys( replacer ).forEach( ( key ) => {
+            if ( sourcePath.includes( key ) ) {
+                sourcePath = sourcePath.replace( key, replacer[key]() );
+            }
+        });
+        sourcePath = slash( sourcePath );
+        this._node.context.log( `[write] => sourcePath=${sourcePath}` );
+        return sourcePath;
+    }
 }
 
 function tally ( nodes: Node[]) {
     return nodes.reduce( ( total, node ) => {
         return total + node.decodingTime;
     }, 0 );
-}
-
-function computeSourceMappingURL ( sourceMappingURLDefault: string, map: SourceMap, map_file: string, options: Options ) {
-    let sourceMappingURL = options.sourceMappingURLTemplate;
-    if ( sourceMappingURL === 'inline' ) {
-        sourceMappingURL = map.toUrl();
-    }
-    else if ( sourceMappingURL === 'none' ) {
-        sourceMappingURL = null;
-    }
-    else {
-        const replacer: Record<string, () => string> = {
-            '[absolute-path]': () => map_file,
-            '[relative-path]': () => path.relative( options.sourceMappingURLBase || sourceMappingURLDefault, map_file ),
-            '[resource-path]': () => {
-                const result = path.relative( options.sourceMappingURLBase || sourceMappingURLDefault, map_file );
-                const resultParts = path.parse( result );
-                return result.substring( resultParts.root.length );
-            }
-        };
-        Object.keys( replacer ).forEach( ( key ) => {
-            if ( sourceMappingURL.includes( key ) ) {
-                try {
-                    sourceMappingURL = sourceMappingURL.replace( key, replacer[key]() );
-                }
-                catch ( err ) {
-                    throw new Error( 'map file URL is required' );
-                }
-            }
-        });
-    }
-    return sourceMappingURL;
-}
-
-function computeSourcePath ( sourcePathDefault: string, source_file: string, options: Options ) {
-    const replacer: Record<string, () => string> = {
-        '[absolute-path]': () => source_file,
-        '[relative-path]': () => path.relative( options.sourcePathBase || sourcePathDefault, source_file ),
-        '[resource-path]': () => {
-            const result = path.relative( options.sourcePathBase || sourcePathDefault, source_file );
-            const resultParts = path.parse( result );
-            return result.substring( resultParts.root.length );
-        }
-    };
-    let sourcePath = options.sourcePathTemplate;
-    Object.keys( replacer ).forEach( ( key ) => {
-        if ( sourcePath.includes( key ) ) {
-            sourcePath = sourcePath.replace( key, replacer[key]() );
-        }
-    });
-    return slash( sourcePath );
 }

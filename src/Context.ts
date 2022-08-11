@@ -49,10 +49,14 @@ export class Context {
         }
     }
 
-    log ( message: string ) {
+    logActivated () {
         // this._options = this._options || {};
         // this._options.verbose = true;
-        if ( this._options && this._options.verbose === true ) {
+        return ( this._options && this._options.verbose === true );
+    }
+
+    log ( message: string ) {
+        if ( this.logActivated() ) {
             console.log( message );
         }
     }

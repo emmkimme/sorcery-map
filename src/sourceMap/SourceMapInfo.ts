@@ -4,28 +4,33 @@ import * as fse from 'fs-extra';
 
 import atob from '../utils/atob.js';
 
-import { getSourceMappingURLInfo } from './sourceMappingURL';
+import { getSourceMappingURLInfo, SourceMappingURLInfo } from './sourceMappingURL';
 import type { SourceMapProps } from './SourceMap.js';
 import { sourceMappingURLProp } from './sourceMappingURL';
 
 /** @internal */
-export class SourceMapInfoProps {
-    url?: string;
-    comment?: string;
+export interface SourceMapInfoProps extends SourceMappingURLInfo {
     file?: string;
 }
 
 /** @internal */
 export class SourceMapInfo implements SourceMapInfoProps {
-    url?: string;
+    url: string;
     comment?: string;
     file?: string;
 
     constructor () {
     }
 
-    readContent ( content: string ): SourceMapInfoProps | null {
-        return getSourceMappingURLInfo( content, this );
+    readContent ( content: string ): SourceMappingURLInfo | null {
+        const sourceMappingURLInfo = getSourceMappingURLInfo( content );
+        if ( sourceMappingURLInfo ) {
+            Object.assign( this, sourceMappingURLInfo );
+        }
+        else {
+            this.url = this.comment = null;
+        }
+        return sourceMappingURLInfo;
     }
 
     readMap ( base: string ): Promise<SourceMapProps> {
