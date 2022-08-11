@@ -142,7 +142,7 @@ export class ChainInternal implements Chain {
         if ( map_file ) {
             sourcePathDefault = path.dirname( map_file );
         }
-        // else related to content file location
+        // else related to content file location (happen if map is inlined)
         else if ( content_file ) {
             sourcePathDefault = path.dirname( content_file );
         }
@@ -230,7 +230,13 @@ export class ChainInternal implements Chain {
         // inherit of current info for optimizing replacement
         const info = this._node.mapInfo ? { ...this._node.mapInfo, ...newSourceMappingURLInfo } : newSourceMappingURLInfo;
         const content = this._node.content && replaceSourceMappingURLComment( this._node.content, info );
-        return { content_file, content, map_file, map_stream, map };
+        return {
+            content_file,
+            content,
+            map_file: map ? map_file: null,
+            map_stream: map ? map_stream: null,
+            map
+        };
     }
 
     private _computeSourceMappingURL ( sourceMappingURLDefault: string, map: SourceMap, map_file: string, options: Options ) {

@@ -36,7 +36,10 @@ export class SourceMapInfo implements SourceMapInfoProps {
     readMap ( base: string ): Promise<SourceMapProps> {
         const base64_str = getRawMapFromBase64( this.url );
         if ( base64_str ) {
-            return Promise.resolve( parseJSON( base64_str ) );
+            return Promise.resolve()
+            .then(() => {
+                return parseJSON( base64_str );
+            });
         }
         this.file = path.resolve( base, this.url );
         return fse.readFile( this.file, { encoding: 'utf-8' })
