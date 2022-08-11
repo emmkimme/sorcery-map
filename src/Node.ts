@@ -288,14 +288,10 @@ export class Node {
     }
 
     private _flushMapInfo () {
-        this._context.log( `[Node-${this._id}] map ${JSON.stringify( this._mapInfo )}` );
-        this._flushMap( this._map );
-    }
-
-    private _flushMap ( map: SourceMapProps ) {
         if ( this._context.logActivated() ) {
-            if ( map ) {
-                this._context.log( JSON.stringify( map, null, 4 ) );
+            this._context.log( `[Node-${this._id}] map ${JSON.stringify( this._mapInfo )}` );
+            if ( this._map ) {
+                this._context.log( JSON.stringify( this._map, null, 4 ) );
             }
             else {
                 this._context.log( 'no map' );
