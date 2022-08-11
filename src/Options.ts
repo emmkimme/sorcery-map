@@ -28,9 +28,10 @@ interface DeprecatedOtions {
     base?: string;
 }
 
+/** @internal */
 export const JS_FILE_REGEXP = /\.js$/;
+/** @internal */
 export const MAP_FILE_REGEXP = /\.map$/;
-
 
 export interface Options extends InputOptions, OutputOptions, DeprecatedOtions {
 }
