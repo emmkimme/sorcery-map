@@ -37,9 +37,9 @@ export class SourceMapInfo implements SourceMapInfoProps {
         const base64_str = getRawMapFromBase64( this.url );
         if ( base64_str ) {
             return Promise.resolve()
-            .then(() => {
-                return parseJSON( base64_str );
-            });
+                .then( () => {
+                    return parseJSON( base64_str );
+                });
         }
         this.file = path.resolve( base, this.url );
         return fse.readFile( this.file, { encoding: 'utf-8' })
@@ -67,7 +67,12 @@ export class SourceMapInfo implements SourceMapInfoProps {
  * see \webpack\source-map-loader\dist\index.js
  */
 function parseJSON ( json: string ): SourceMapProps | null {
-    return JSON.parse( json.replace( /^\)]}'[^\n]*\n/, '' ) );
+    try {
+        return JSON.parse( json.replace( /^\)]}'[^\n]*\n/, '' ) );
+    }
+    catch ( err ) {
+        throw new Error( `JSON.parse error ${err} - ${json}` );
+    }
 }
 
 function getRawMapFromBase64 ( url: string ): string | null {
