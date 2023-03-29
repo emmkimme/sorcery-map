@@ -133,7 +133,7 @@ function loadSync(file: string, options: Options): Chain | null;
 ```js
 var sourcery_map = require( 'sourcery-map' );
 
-sourcery_map.load( 'some/generated/code.min.js' ).then( function ( chain ) {
+sourcery_map.load( 'some/generated/code.min.js' ).then( ( chain ) => {
   // generate a flattened sourcemap
   var map = chain.apply(); // { version: 3, file: 'code.min.js', ... }
 

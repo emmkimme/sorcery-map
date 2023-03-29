@@ -1,7 +1,7 @@
 {
   "name": "sourcery-map",
   "description": "Find your way through the chain of sourcemaps to the original source, like magic sourcery",
-  "version": "6.0.1",
+  "version": "7.0.0",
   "author": "Emmanuel Kimmerlin",
   "repository": "https://github.com/emmkimme/sourcery-map",
   "license": "MIT",
@@ -15,8 +15,9 @@
       "require": "./lib/cjs/index.js",
       "types": "./lib/cjs/index.d.ts"
     },
-    "./plugin": "./plugin.js",
-    "./loader": "./loader.js"
+    "./esbuild-plugin": "./esbuild-plugin.js",
+    "./webpack-plugin": "./webpack-plugin.js",
+    "./webpack-loader": "./webpack-loader.js"
   },
   "module": "./lib/esm/index.js",
   "main": "./lib/cjs/index.js",
@@ -46,6 +47,7 @@
     }
   ],
   "dependencies": {
+    "esbuild": "^0.17.14",
     "find-parent-dir": "^0.3.1",
     "fs-extra": "^10.1.0",
     "globby": "~11.0.4",

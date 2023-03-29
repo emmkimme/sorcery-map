@@ -7,7 +7,7 @@ import { Context } from '../Context';
 import { Options, JS_FILE_REGEXP } from '../Options';
 
 export class Plugin implements LoaderOptionsPlugin {
-    static pluginName = 'SourceryMapper';
+    static pluginName = 'sourcery-map';
 
     private _options: Options;
 
