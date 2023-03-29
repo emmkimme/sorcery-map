@@ -118,12 +118,12 @@ export class Node {
         return this._mappings;
     }
 
-    get isOriginalSource () {
+    get isPureSource () {
         return ( this._mapInfo == null && this._map == null );
     }
 
-    get isCompleteSourceContent () {
-        if ( this.isOriginalSource ) {
+    get hasPureSourceContent () {
+        if ( this.isPureSource ) {
             return true;
         }
         return ( this._sources == null ) || !this._sources.some( ( node ) => node._content == null );
@@ -132,7 +132,7 @@ export class Node {
     trace ( lineIndex: number, columnIndex: number, name?: string, options?: Options ): Trace {
         // If this node doesn't have a source map, we have
         // to assume it is the original source
-        if ( !this.map || ( options && options.flatten === 'existing' && !this.isCompleteSourceContent ) ) {
+        if ( !this.map || ( options && options.flatten === 'existing' && !this.hasPureSourceContent ) ) {
             return {
                 source: this._file,
                 line: lineIndex + 1,

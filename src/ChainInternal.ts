@@ -20,12 +20,12 @@ import type { Chain } from './Chain';
 export class ChainInternal implements Chain {
     static Load ( context: Context, file?: string, content?: string, map?: SourceMapProps ): Promise<ChainInternal | null> {
         return Node.Load( context, file, content, map )
-            .then( ( node ) => node.isOriginalSource ? null : new ChainInternal( node ) );
+            .then( ( node ) => node.isPureSource ? null : new ChainInternal( node ) );
     }
 
     static LoadSync ( context: Context, file?: string, content?: string, map?: SourceMapProps ): ChainInternal | null {
         const node = Node.LoadSync( context, file, content, map );
-        return node.isOriginalSource ? null : new ChainInternal( node );
+        return node.isPureSource ? null : new ChainInternal( node );
     }
 
     private _node: Node;
@@ -60,7 +60,7 @@ export class ChainInternal implements Chain {
     private _generateMap ( content_file: string, map_file: string, apply_options: Options ): SourceMap | null {
         const options = mergeOptions( this._node.context.options, apply_options );
 
-        if ( !this._node.map || ( options && options.flatten === 'existing' && !this._node.isCompleteSourceContent ) ) {
+        if ( !this._node.map || ( options && options.flatten === 'existing' && !this._node.hasPureSourceContent ) ) {
             return null;
         }
 
