@@ -47,7 +47,6 @@
     }
   ],
   "dependencies": {
-    "esbuild": "^0.17.14",
     "find-parent-dir": "^0.3.1",
     "fs-extra": "^10.1.0",
     "globby": "~11.0.4",
@@ -66,6 +65,7 @@
     "codecov.io": "^0.1.6",
     "coffee-script": "^1.10.0",
     "del-cli": "^4.0.1",
+    "esbuild": "^0.17.14",
     "eslint": "^8.21.0",
     "exorcist": "^2.0.0",
     "glob": "^8.0.3",
@@ -103,8 +103,9 @@
     "deploy": "npm publish ./ --registry https://registry.npmjs.org"
   },
   "files": [
-    "loader.js",
-    "plugin.js",
+    "webpack-loader.js",
+    "webpack-plugin.js",
+    "esbuild-plugin.js",
     "lib/",
     "README.md"
   ]

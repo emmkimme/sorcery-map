@@ -278,7 +278,7 @@ module.exports = {
                 {
                     test: /\.js$/,
                     use: [
-                        { loader : 'sourcery-map/loader',
+                        { loader : 'sourcery-map/webpack-loader',
                           options: { 
                               excludeContent: true
                           }
@@ -294,7 +294,7 @@ If the Webpack source maps are not properly generated, problem of paths, roots, 
 
 Here, webpack will generated map files using absolute paths, our plugin will normalize paths and flattern them.
 ```js
-const SourceryMapperPlugin = require('sourcery-map/plugin');
+const SourceryMapperPlugin = require('sourcery-map/webpack-plugin');
 
 module.exports = {
  ...

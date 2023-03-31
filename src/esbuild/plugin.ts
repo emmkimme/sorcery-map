@@ -1,15 +1,15 @@
 import * as path from 'path';
 
-import { OnLoadResult, Plugin as ESbuildPlugin, PluginBuild } from 'esbuild/lib/main';
+import type { OnLoadResult, Plugin as ESBuildPlugin, PluginBuild } from 'esbuild/lib/main';
 
 import { Options, JS_FILE_REGEXP } from '../Options';
 import { ChainInternal } from '../ChainInternal';
 import { Context } from '../Context';
 
-export class Plugin implements ESbuildPlugin {
+export class Plugin implements ESBuildPlugin {
     public name: 'sourcery-map';
-
     private _options: Options;
+
     constructor ( options: Options ) {
         this._options = options;
     }
