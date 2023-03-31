@@ -3,7 +3,8 @@
     "include": [
         "./src/index.ts",
         "./src/bin/*.ts",
-        "./src/webpack/*.ts"
+        "./src/webpack/*.ts",
+        "./src/esbuild/*.ts",
     ],
     "compilerOptions": {
         "module": "commonjs",
