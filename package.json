@@ -1,7 +1,7 @@
 {
   "name": "sourcery-map",
   "description": "Find your way through the chain of sourcemaps to the original source, like magic sourcery",
-  "version": "6.0.1",
+  "version": "7.0.0",
   "author": "Emmanuel Kimmerlin",
   "repository": "https://github.com/emmkimme/sourcery-map",
   "license": "MIT",
@@ -15,8 +15,9 @@
       "require": "./lib/cjs/index.js",
       "types": "./lib/cjs/index.d.ts"
     },
-    "./plugin": "./plugin.js",
-    "./loader": "./loader.js"
+    "./esbuild-plugin": "./esbuild-plugin.js",
+    "./webpack-plugin": "./webpack-plugin.js",
+    "./webpack-loader": "./webpack-loader.js"
   },
   "module": "./lib/esm/index.js",
   "main": "./lib/cjs/index.js",
@@ -36,6 +37,7 @@
     "transformation",
     "flatten",
     "webpack",
+    "esbuild",
     "loader",
     "plugin"
   ],
@@ -64,6 +66,7 @@
     "codecov.io": "^0.1.6",
     "coffee-script": "^1.10.0",
     "del-cli": "^4.0.1",
+    "esbuild": "^0.17.14",
     "eslint": "^8.21.0",
     "exorcist": "^2.0.0",
     "glob": "^8.0.3",
@@ -101,8 +104,9 @@
     "deploy": "npm publish ./ --registry https://registry.npmjs.org"
   },
   "files": [
-    "loader.js",
-    "plugin.js",
+    "webpack-loader.js",
+    "webpack-plugin.js",
+    "esbuild-plugin.js",
     "lib/",
     "README.md"
   ]
