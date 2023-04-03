@@ -37,8 +37,8 @@ export interface Options extends InputOptions, OutputOptions, DeprecatedOtions {
 }
 
 /** @internal */
-export function mergeOptions ( ...raw_options: Options[]): Options {
-    const options = Object.assign({}, ...raw_options ) as Options;
+export function mergeOptions ( default_options: Options, new_options?: Options ): Options {
+    const options = Object.assign({}, default_options, new_options ) as Options;
 
     options.flatten = options.flatten || 'full';
 
