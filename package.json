@@ -37,6 +37,7 @@
     "transformation",
     "flatten",
     "webpack",
+    "esbuild",
     "loader",
     "plugin"
   ],

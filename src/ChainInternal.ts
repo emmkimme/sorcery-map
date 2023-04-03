@@ -213,7 +213,7 @@ export class ChainInternal implements Chain {
             fse.writeFileSync( map_file, map.toString() );
         }
     }
-    
+
     // Tons of parameters (optional or mandatory), options, configurations to manage !!!
     getContentAndMap ( content_file?: string, map_output?: string | Writable, write_options?: Options ) {
         const options = mergeOptions( this._node.context.options, write_options );
