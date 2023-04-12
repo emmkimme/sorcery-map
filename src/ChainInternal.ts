@@ -60,7 +60,7 @@ export class ChainInternal implements Chain {
     private _generateMap ( content_file: string, map_file: string, apply_options: Options ): SourceMap | null {
         const options = mergeOptions( this._node.context.options, apply_options );
 
-        if ( !this._node.map || ( options && options.flatten === 'existing' && !this._node.hasPureSourceContent ) ) {
+        if ( !this._node.map ) {
             return null;
         }
 
@@ -71,7 +71,11 @@ export class ChainInternal implements Chain {
         const applySegment = ( segment: SourceMapSegment, result: SourceMapLine ) => {
             if ( segment.length < 4 ) return;
 
-            const traced = this._node.sources[ segment[1] ].trace( // source
+            const sourceNode = this._node.sources[ segment[1] ];
+            if ( ( options && options.flatten === 'existing' ) && !sourceNode.exist ) {
+                return;
+            }
+            const traced = sourceNode.trace( // source
                 segment[2], // source code line
                 segment[3], // source code column
                 this._node.map.names[ segment[4] ],
@@ -84,7 +88,7 @@ export class ChainInternal implements Chain {
             }
 
             let sourceIndex = allSources.findIndex( ( node ) => node.file === traced.source );
-            if ( !~sourceIndex ) {
+            if ( sourceIndex === -1 ) {
                 sourceIndex = allSources.length;
                 allSources.push( this._node.context.cache[traced.source]);
             }
@@ -110,13 +114,11 @@ export class ChainInternal implements Chain {
 
         if ( options.flatten ) {
             let i = this._node.mappings.length;
-            allMappings = new Array( i );
+            allMappings = new Array( i ).fill([]);
             // Trace mappings
             const tracingStart = process.hrtime();
             while ( i-- ) {
                 const line = this._node.mappings[i];
-                allMappings[i] = [];
-
                 for ( let j = 0; j < line.length; j += 1 ) {
                     applySegment( line[j], allMappings[i]);
                 }
@@ -124,6 +126,12 @@ export class ChainInternal implements Chain {
 
             const tracingTime = process.hrtime( tracingStart );
             this._stats.tracingTime = 1e9 * tracingTime[0] + tracingTime[1];
+
+            // A map is not needed if there is no mappings !
+            if ( allMappings.find( value => value.length ) == null ) {
+                return null;
+            }
+   
         }
         else {
             allMappings = this._node.mappings;

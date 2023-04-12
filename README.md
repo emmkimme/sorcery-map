@@ -2,10 +2,11 @@
 
 This package is a JavaScript source map management toolset
 - fork of [sorcery](https://github.com/Rich-Harris/sorcery)
-- including [exorcist](https://www.npmjs.com/package/exorcist) like feature
+- including [exorcist](https://www.npmjs.com/package/exorcist)
 - implementing [webpack](https://webpack.js.org/) loader and plugin
+- implementing [esbuild](https://esbuild.github.io/) plugin
 
-The purpose is to be consistent, have the same implemenation and the same options for managing these different features.
+The purpose is to be consistent, have the same implementation and the same options for managing these different purposes.
  
 **We merged pull requests**  
 * [Adjust delimiter used to detect the end of source map URLs in JS files](https://github.com/Rich-Harris/sorcery/pull/176)
@@ -21,7 +22,7 @@ The purpose is to be consistent, have the same implemenation and the same option
 * Provide a source root resolution fallback when map has been generated from another path (browserify)
 * sourceMappingURL can be inline content, absolute, relative...
 
-**Beware**, all these features are experimental and not fully covered by tests, if you find an issue, do not hesitate to create a bug or contribute ;-)
+**Beware**, some features are still experimental and not fully covered by tests, if you find an issue, do not hesitate to create a bug or contribute ;-)
 
 ## Usage
 
@@ -311,7 +312,6 @@ module.exports = {
 ```
 
 ## [esbuild](https://esbuild.github.io/)
-
 
 ### Plugin (experimental)
 ```js

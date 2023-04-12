@@ -122,29 +122,29 @@ export class Node {
         return ( this._mapInfo == null && this._map == null );
     }
 
-    get hasPureSourceContent () {
-        if ( this.isPureSource ) {
-            return true;
-        }
-        return ( this._sources == null ) || !this._sources.some( ( node ) => node._content == null );
+    get exist () {
+        return ( this._file && this._content );
+    }
+
+    private _defaultTrace ( lineIndex: number, columnIndex: number, name?: string ) {
+        return {
+            source: this._file,
+            line: lineIndex + 1,
+            column: columnIndex || 0,
+            name
+        };
     }
 
     trace ( lineIndex: number, columnIndex: number, name?: string, options?: Options ): Trace {
         // If this node doesn't have a source map, we have
         // to assume it is the original source
-        if ( !this.map || ( options && options.flatten === 'existing' && !this.hasPureSourceContent ) ) {
-            return {
-                source: this._file,
-                line: lineIndex + 1,
-                column: columnIndex || 0,
-                name: name
-            };
+        if ( !this._map ) {
+            return this._defaultTrace( lineIndex, columnIndex, name );
         }
 
         // Otherwise, we need to figure out what this position in
         // the intermediate file corresponds to in *its* source
         const segments = this._mappings[lineIndex];
-
         if ( !segments || segments.length === 0 ) {
             return null;
         }
@@ -153,13 +153,13 @@ export class Node {
             const len = segments.length;
             for ( let i = 0; i < len; i += 1 ) {
                 const generatedCodeColumn = segments[i][0];
-
                 if ( generatedCodeColumn > columnIndex ) {
                     break;
                 }
-
                 if ( generatedCodeColumn === columnIndex ) {
-                    if ( segments[i].length < 4 ) return null;
+                    if ( segments[i].length < 4 ) {
+                        return null;
+                    }
 
                     const sourceFileIndex = segments[i][1] || 0;
                     const sourceCodeLine = segments[i][2] || 0;
@@ -167,7 +167,12 @@ export class Node {
                     const nameIndex = segments[i][4] || 0;
 
                     const parent = this._sources[sourceFileIndex];
-                    return parent.trace( sourceCodeLine, sourceCodeColumn, this.map.names[nameIndex] || name, options );
+                    if ( ( options && options.flatten === 'existing' ) && !parent.exist ) {
+                        return this._defaultTrace( lineIndex, columnIndex, name );
+                    }
+                    else {
+                        return parent.trace( sourceCodeLine, sourceCodeColumn, this._map.names[nameIndex] || name, options );
+                    }
                 }
             }
         }
@@ -178,7 +183,12 @@ export class Node {
         const nameIndex = segments[0][4] || 0;
 
         const parent = this._sources[sourceFileIndex];
-        return parent.trace( sourceCodeLine, null, this.map.names[nameIndex] || name, options );
+        if ( ( options && options.flatten === 'existing' ) && !parent.exist ) {
+            return this._defaultTrace( lineIndex, columnIndex, name );
+        }
+        else {
+            return parent.trace( sourceCodeLine, null, this._map.names[nameIndex] || name, options );
+        }
     }
 
     private _load (): Promise<void> {
