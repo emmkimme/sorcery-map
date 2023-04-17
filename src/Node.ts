@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { decode, SourceMapMappings } from 'sourcemap-codec';
+import { decode, SourceMapMappings } from '@jridgewell/sourcemap-codec';
 import * as fse from 'fs-extra';
 
 import { manageFileProtocol } from './utils/path';

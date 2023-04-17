@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import * as fse from 'fs-extra';
-import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from 'sourcemap-codec';
+import { encode, SourceMapSegment, SourceMapMappings, SourceMapLine } from '@jridgewell/sourcemap-codec';
 import { writable } from 'is-stream';
 
 import { replaceSourceMappingURLComment } from './sourceMap/sourceMappingURL';
@@ -102,7 +102,7 @@ export class ChainInternal implements Chain {
 
             if ( traced.name ) {
                 let nameIndex = allNames.indexOf( traced.name );
-                if ( !~nameIndex ) {
+                if ( nameIndex === -1 ) {
                     nameIndex = allNames.length;
                     allNames.push( traced.name );
                 }
@@ -114,12 +114,13 @@ export class ChainInternal implements Chain {
 
         if ( options.flatten ) {
             let i = this._node.mappings.length;
-            allMappings = new Array( i ).fill([]);
+            allMappings = new Array( i );
             // Trace mappings
             const tracingStart = process.hrtime();
             while ( i-- ) {
+                allMappings[i] = [];
                 const line = this._node.mappings[i];
-                for ( let j = 0; j < line.length; j += 1 ) {
+                for ( let j = 0; j < line.length; ++j ) {
                     applySegment( line[j], allMappings[i]);
                 }
             }
