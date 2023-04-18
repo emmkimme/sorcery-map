@@ -151,7 +151,7 @@ export class Node {
 
         if ( columnIndex != null ) {
             const len = segments.length;
-            for ( let i = 0; i < len; i += 1 ) {
+            for ( let i = 0; i < len; ++i ) {
                 const generatedCodeColumn = segments[i][0];
                 if ( generatedCodeColumn > columnIndex ) {
                     break;
@@ -170,7 +170,7 @@ export class Node {
                         const sourceCodeLine = segments[i][2] || 0;
                         const sourceCodeColumn = segments[i][3] || 0;
                         const nameIndex = segments[i][4] || 0;
-                            return parent.trace( sourceCodeLine, sourceCodeColumn, this._map.names[nameIndex] || name, options );
+                        return parent.trace( sourceCodeLine, sourceCodeColumn, this._map.names[nameIndex] || name, options );
                     }
                 }
             }
@@ -185,7 +185,7 @@ export class Node {
         else {
             const sourceCodeLine = segments[0][2] || 0;
             const nameIndex = segments[0][4] || 0;
-                return parent.trace( sourceCodeLine, null, this._map.names[nameIndex] || name, options );
+            return parent.trace( sourceCodeLine, null, this._map.names[nameIndex] || name, options );
         }
     }
 
