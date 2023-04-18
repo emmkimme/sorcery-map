@@ -162,16 +162,15 @@ export class Node {
                     }
 
                     const sourceFileIndex = segments[i][1] || 0;
-                    const sourceCodeLine = segments[i][2] || 0;
-                    const sourceCodeColumn = segments[i][3] || 0;
-                    const nameIndex = segments[i][4] || 0;
-
                     const parent = this._sources[sourceFileIndex];
                     if ( ( options && options.flatten === 'existing' ) && !parent.exist ) {
                         return this._defaultTrace( lineIndex, columnIndex, name );
                     }
                     else {
-                        return parent.trace( sourceCodeLine, sourceCodeColumn, this._map.names[nameIndex] || name, options );
+                        const sourceCodeLine = segments[i][2] || 0;
+                        const sourceCodeColumn = segments[i][3] || 0;
+                        const nameIndex = segments[i][4] || 0;
+                            return parent.trace( sourceCodeLine, sourceCodeColumn, this._map.names[nameIndex] || name, options );
                     }
                 }
             }
@@ -179,15 +178,14 @@ export class Node {
 
         // fall back to a line mapping
         const sourceFileIndex = segments[0][1] || 0;
-        const sourceCodeLine = segments[0][2] || 0;
-        const nameIndex = segments[0][4] || 0;
-
         const parent = this._sources[sourceFileIndex];
         if ( ( options && options.flatten === 'existing' ) && !parent.exist ) {
             return this._defaultTrace( lineIndex, columnIndex, name );
         }
         else {
-            return parent.trace( sourceCodeLine, null, this._map.names[nameIndex] || name, options );
+            const sourceCodeLine = segments[0][2] || 0;
+            const nameIndex = segments[0][4] || 0;
+                return parent.trace( sourceCodeLine, null, this._map.names[nameIndex] || name, options );
         }
     }
 
