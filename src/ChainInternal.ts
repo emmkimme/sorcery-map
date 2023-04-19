@@ -227,18 +227,20 @@ export class ChainInternal implements Chain {
     getContentAndMap ( content_output_file?: string, map_output?: string | Writable, write_options?: Options ) {
         const options = mergeOptions( this._node.context.options, write_options );
 
-        const content_file = content_output_file ? content_output_file : this._node.file;
+        const content_file = 
+            // do we provide an output content file ?
+            ( typeof content_output_file === 'string' ) ? content_output_file : this._node.file;
    
         const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null :
-            // do we provide an output name ?
+            // do we provide an output map file ?
             ( typeof map_output === 'string' ) ? path.resolve( map_output ) : 
-                // do we have a content_file ?
+                // do we have a content file ?
                 content_file ? content_file + '.map' :
-                    // do we have the original map file name ?
+                    // do we have the original map file ?
                     this._node?.mapInfo?.file;
 
         const map_stream = ( options.sourceMappingURLTemplate === 'inline' ) ? null :
-            // do we provide an output stream ?
+            // do we provide an output map stream ?
             writable( map_output ) ? map_output : null;
 
         const map = this._generateMap( content_file, map_file, options );
