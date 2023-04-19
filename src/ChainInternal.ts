@@ -235,7 +235,7 @@ export class ChainInternal implements Chain {
                 // do we have a content_file ?
                 content_file ? content_file + '.map' :
                     // do we have the original map file name ?
-                    this._node.mapInfo?.file;
+                    this._node?.mapInfo?.file;
 
         const map_stream = ( options.sourceMappingURLTemplate === 'inline' ) ? null :
             // do we provide an output stream ?
