@@ -174,7 +174,7 @@ var loc = chain.trace( x, y );
 chain.writeSync();
 ```
 
-You can pass an optional second argument to sorcery.load() and sorcery.loadSync(), with zero or more of the following properties:
+You can pass an optional second argument to sourcery_map.load() and sourcery_map.loadSync(), with zero or more of the following properties:
 content - a map of filename: contents pairs. filename will be resolved against the current working directory if needs be
 sourcemaps - a map of filename: sourcemap pairs, where filename is the name of the file the sourcemap is related to. This will override any sourceMappingURL comments in the file itself.
 ```js
