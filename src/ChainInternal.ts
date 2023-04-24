@@ -236,7 +236,7 @@ export class ChainInternal implements Chain {
         let map_file: string | null | undefined;
         if ( !content_file_arg && !map_file_arg ) {
             content_file = this._node?.file || this._node?.map?.file;
-            map_file = this._node?.mapInfo?.file || content_file + '.map';
+            map_file = this._node?.mapInfo?.file || content_file && (content_file + '.map');
         }
         else if ( !map_file_arg ) {
             content_file = content_file_arg;
