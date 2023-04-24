@@ -53,8 +53,8 @@ export class ChainInternal implements Chain {
     }
 
     apply ( apply_options: Options ): SourceMap | null {
-        const map_file = this._node.mapInfo && this._node.mapInfo.file;
-        return this._generateMap( this._node.file, map_file, apply_options );
+        const { map } = this.getContentAndMap( undefined, undefined, apply_options );
+        return map;
     }
 
     private _generateMap ( content_file: string, map_file: string, apply_options: Options ): SourceMap | null {
