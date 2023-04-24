@@ -10,9 +10,9 @@ export function Plugin ( options: Options ): ESBuildPlugin {
     return {
         name: 'sourcery-map',
         setup ( build: PluginBuild ): void | Promise<void> {
-            build.onLoad({ filter: JS_FILE_REGEXP }, ({ path: file }) => {
+            build.onLoad({ filter: JS_FILE_REGEXP }, async ( loadArgs ) => {
                 const context = new Context( path.resolve(), options );
-                return ChainInternal.Load( context, file ).then( ( chain ) => {
+                return ChainInternal.Load( context, loadArgs.path ).then( ( chain ) => {
                     const onLoadResult: OnLoadResult = {};
                     if ( chain ) {
                         const { content, map } = chain.getContentAndMap( );
