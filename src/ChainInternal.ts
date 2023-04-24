@@ -53,11 +53,11 @@ export class ChainInternal implements Chain {
     }
 
     apply ( apply_options: Options ): SourceMap | null {
-        const { map } = this.getContentAndMap( undefined, undefined, apply_options );
+        const { map } = this._getContentAndMap( undefined, undefined, apply_options );
         return map;
     }
 
-    private _generateMap ( content_file: string, map_file: string, apply_options: Options ): SourceMap | null {
+    private _generateMap ( content_file: string | null | undefined, map_file: string | null | undefined, apply_options: Options ): SourceMap | null {
         const options = mergeOptions( this._node.context.options, apply_options );
 
         if ( !this._node.map ) {
@@ -159,7 +159,7 @@ export class ChainInternal implements Chain {
         else {
             sourcePathDefault = this._node.context.origin;
         }
-        const map_content_file = path.basename( content_file || this._node.map.file );
+        const map_content_file = content_file ? path.basename( content_file ): undefined;
         const map = new SourceMap({
             version: 3,
             file: map_content_file,
@@ -190,7 +190,7 @@ export class ChainInternal implements Chain {
     write ( destOrOptions: string | Options, write_raw_options?: Options ): Promise<void> {
         const { options: write_options, output } = parseWriteOptions( destOrOptions, write_raw_options );
         const content_file = output ? path.resolve( output ) : this._node.file;
-        const { content, map_file, map_stream, map } = this.getContentAndMap( content_file, null, write_options );
+        const { content, map_file, map_stream, map } = this._getContentAndMap( content_file, null, write_options );
         const promises = [];
         if ( content ) {
             promises.push( fse.ensureDir( path.dirname( content_file ) ).then( () => fse.writeFile( content_file, content ) ) );
@@ -209,7 +209,7 @@ export class ChainInternal implements Chain {
     writeSync ( destOrOptions: string | Options, write_raw_options?: Options ): void {
         const { options: write_options, output } = parseWriteOptions( destOrOptions, write_raw_options );
         const content_file = output ? path.resolve( output ) : this._node.file;
-        const { content, map_file, map_stream, map } = this.getContentAndMap( content_file, null, write_options );
+        const { content, map_file, map_stream, map } = this._getContentAndMap( content_file, null, write_options );
         if ( content ) {
             fse.ensureDirSync( path.dirname( content_file ) );
             fse.writeFileSync( content_file, content );
@@ -224,27 +224,31 @@ export class ChainInternal implements Chain {
     }
 
     // Tons of parameters (optional or mandatory), options, configurations to manage !!!
-    getContentAndMap ( content_output_file?: string, map_output?: string | Writable, write_options?: Options ) {
+    // public, must accessible for loader/plugin
+    _getContentAndMap ( content_output_file?: string | null, map_output_file_or_stream?: string | Writable | null, write_options?: Options ) {
         const options = mergeOptions( this._node.context.options, write_options );
 
-        const content_file = 
-            // do we provide an output content file ?
-            ( typeof content_output_file === 'string' ) ? content_output_file : this._node.file;
-   
-        const map_file = ( options.sourceMappingURLTemplate === 'inline' ) ? null :
-            // do we provide an output map file ?
-            ( typeof map_output === 'string' ) ? path.resolve( map_output ) : 
-                // do we have a content file ?
-                content_file ? content_file + '.map' :
-                    // do we have the original map file ?
-                    this._node?.mapInfo?.file;
-
-        const map_stream = ( options.sourceMappingURLTemplate === 'inline' ) ? null :
-            // do we provide an output map stream ?
-            writable( map_output ) ? map_output : null;
+        const content_file_arg = ( typeof content_output_file === 'string' ) ? path.resolve( content_output_file ) : null;
+        const map_file_arg = ( typeof map_output_file_or_stream === 'string' ) ? path.resolve( map_output_file_or_stream ) : null;
+        const map_stream_arg = writable( map_output_file_or_stream ) ? map_output_file_or_stream : null;
+        
+        let content_file: string | null | undefined;
+        let map_file: string | null | undefined;
+        if ( !content_file_arg && !map_file_arg ) {
+            content_file = this._node?.file || this._node?.map?.file;
+            map_file = this._node?.mapInfo?.file || content_file + '.map';
+        }
+        else if ( !map_file_arg ) {
+            content_file = content_file_arg;
+            map_file = content_file_arg + '.map';
+        }
+        else if ( !content_file_arg ) {
+            content_file = this._node?.map?.file || this._node?.file;
+            map_file = map_file_arg;
+        }
 
         const map = this._generateMap( content_file, map_file, options );
-        const sourceMappingURLDefault = content_file ? path.dirname( content_file ) : map_file ? path.dirname( map_file ) : this._node.context.origin;
+        const sourceMappingURLDefault = content_file_arg ? path.dirname( content_file_arg ) : map_file ? path.dirname( map_file ) : this._node.context.origin;
         const sourceMappingURL = map ? this._computeSourceMappingURL( sourceMappingURLDefault, map, map_file, options ) : '';
         const newSourceMappingURLInfo = { url: sourceMappingURL };
         // inherit of current info for optimizing replacement
@@ -253,8 +257,8 @@ export class ChainInternal implements Chain {
         return {
             content_file,
             content,
-            map_file: map ? map_file: null,
-            map_stream: map ? map_stream: null,
+            map_file: ( options.sourceMappingURLTemplate !== 'inline' ) && map ? map_file: null,
+            map_stream: ( options.sourceMappingURLTemplate !== 'inline' ) && map ? map_stream_arg: null,
             map
         };
     }

@@ -24,9 +24,14 @@ export function transform ( mapFileOrStream: string | Writable, transform_raw_op
             .then( ( chain ) => {
                 if ( chain ) {
                     // inline file not found ! to manage
-                    const { content, map_file, map_stream, map } = chain.getContentAndMap( content_file, map_output, options );
+                    const { content, map_file, map_stream, map } = chain._getContentAndMap( content_file, map_output, options );
                     if ( map_stream ) {
-                        map_stream.end( map.toString(), 'utf-8' );
+                        if ( transform_raw_options?.sourceMappingURLTemplate == null ) {
+                            map_stream.emit( 'error', new Error( 'map file URL is required when using stream output' ) );
+                        }
+                        else {
+                            map_stream.end( map.toString(), 'utf-8' );
+                        }
                     }
                     else if ( map_file ) {
                         fse.writeFileSync( map_file, map.toString() );

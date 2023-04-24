@@ -15,7 +15,7 @@ export function Plugin ( options: Options ): ESBuildPlugin {
                 return ChainInternal.Load( context, loadArgs.path ).then( ( chain ) => {
                     const onLoadResult: OnLoadResult = {};
                     if ( chain ) {
-                        const { content, map } = chain.getContentAndMap( );
+                        const { content, map } = chain._getContentAndMap( );
                         if ( !map && content ) {
                             onLoadResult.contents = content;
                         }

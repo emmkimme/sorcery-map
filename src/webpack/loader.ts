@@ -18,7 +18,7 @@ export function loader ( input: string, inputMap: string ) {
     ChainInternal.Load( context, undefined, input, map )
         .then( ( chain ) => {
             if ( chain ) {
-                const { content, map } = chain.getContentAndMap( );
+                const { content, map } = chain._getContentAndMap( );
                 if ( map ) {
                     input = content;
                     inputMap = map.toString();
